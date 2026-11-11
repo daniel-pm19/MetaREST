@@ -33,8 +33,8 @@ cd frontend && npm run gen:types                         # regenera src/api/type
 ## Contratos (no romper)
 
 - `backend/app/models/mr.py` y `docs/MR_SCHEMA.md` definen el modelo de MR ejecutable
-  (catálogo cerrado de transformaciones y relaciones). **No modificarlos sin PR revisado por Daniel.**
-- `docs/API.md` y los esquemas de los routers definen la API. **No cambiar sin PR revisado por Nestor.**
+  (catálogo cerrado de transformaciones y relaciones). **No modificarlos sin acordarlo con Daniel.**
+- `docs/API.md` y los esquemas de los routers definen la API. **No cambiar sin acordarlo con Nestor.**
 - El frontend nunca escribe tipos de la API a mano: usa `src/api/types.ts` generado.
 
 ## Reglas de seguridad
@@ -48,14 +48,16 @@ cd frontend && npm run gen:types                         # regenera src/api/type
 
 ## Estilo
 
-- Python: ruff (lint + format), type hints, async en I/O, Pydantic v2.
+- Python: ruff (lint + format, `line-length = 120`, reglas `E,F,I,UP,B`), type hints, async en I/O, Pydantic v2.
 - TypeScript: ESLint + Prettier, `strict: true`, componentes funcionales.
 - UI en español; código, nombres de variables y commits en inglés.
 - Tests: pytest con `FakeLLMProvider` (nunca llamar al LLM real en tests/CI).
 
 ## Git
 
-- `main`: protegida, cada push despliega a EC2. `develop`: integración.
-- Ramas `feat/<area>-<tema>`, `fix/<area>-<tema>` (áreas: `pipeline`, `backend`, `frontend`, `infra`, `sut`, `exp`).
-- Commits convencionales (`feat:`, `fix:`, `chore:`, `docs:`, `test:`).
-- PR a `develop` con 1 revisión y CI verde. Merge `develop → main` en cada hito.
+- Todo el equipo trabaja directamente sobre `develop` (sin ramas de feature).
+- `main`: cada push despliega a EC2. Solo se actualiza con merge `develop → main` en cada hito.
+- Antes de empezar y antes de hacer push: `git pull --rebase origin develop`.
+- Commits pequeños y frecuentes, solo con archivos de tu área. Commits convencionales con
+  área como scope: `feat(pipeline): ...`, `fix(frontend): ...`, `docs: ...`, `test(backend): ...`.
+- No hacer push con tests o build rotos. Los cambios de contrato se avisan al equipo antes del push.
