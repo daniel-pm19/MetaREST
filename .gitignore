@@ -6,7 +6,6 @@
 *.key
 *.crt
 
-# ── Claude / Codex (personal) ───────────────────────────
 CLAUDE.local.md
 .claude/settings.local.json
 
