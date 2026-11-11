@@ -1,0 +1,62 @@
+# ── Secrets ─────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# ── Claude / Codex (personal) ───────────────────────────
+CLAUDE.local.md
+.claude/settings.local.json
+
+# ── Python ──────────────────────────────────────────────
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# ── Node / Frontend ─────────────────────────────────────
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+npm-debug.log*
+.vite/
+
+# ── Embedding models cache ──────────────────────────────
+# (anchored: backend/app/models/ holds code and must NOT be ignored)
+.cache/
+/models/
+.fastembed_cache/
+local_cache/
+
+# ── Local data / Docker volumes / backups ───────────────
+infra/data/
+mongo-data/
+backups/
+*.archive
+*.gz
+
+# ── HTTPS certificates (generated on the server) ────────
+infra/certbot/
+letsencrypt/
+
+# ── Experiments (raw data only; results/ is committed) ──
+experiments/cache/
+experiments/raw/
+
+# ── Editors / OS ────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
