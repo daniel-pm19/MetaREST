@@ -11,7 +11,7 @@
     "relation": { "type": "subset", "source_selector": "$.results[*].id", "direction": "followup_in_source" },
     "transformation_logic": "Se divide limit entre 2 (20 -> 10) manteniendo la misma consulta.",
     "expected_relation": "results(limit=10) ⊆ results(limit=20)",
-    "rationale": "Detecta APIs que ignoran limit o que ordenan de forma no determinista."
+    "rationale": "Detecta APIs cuyo orden o filtrado cambia según el tamaño de página."
   },
   "provenance": {
     "provider": "anthropic",
