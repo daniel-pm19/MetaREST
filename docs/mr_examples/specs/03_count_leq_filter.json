@@ -1,0 +1,23 @@
+{
+  "title": "Agregar un filtro no aumenta el total",
+  "description": "Restringir la búsqueda con un filtro de categoría nunca debe reportar más resultados totales que la búsqueda sin filtro.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": { "q": "jazz" }
+  },
+  "followups": [
+    {
+      "transformations": [{ "op": "add_param", "param": "category", "value": "vinyl" }]
+    }
+  ],
+  "relation": {
+    "type": "count_leq",
+    "source_selector": "$.total",
+    "direction": "followup_in_source",
+    "measure": "value"
+  },
+  "transformation_logic": "Se agrega category=vinyl a la consulta original.",
+  "expected_relation": "total(q, category=vinyl) <= total(q)",
+  "rationale": "Detecta filtros ignorados o mal combinados (OR en vez de AND) y totales mal calculados."
+}

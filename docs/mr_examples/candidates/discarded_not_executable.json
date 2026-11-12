@@ -1,0 +1,24 @@
+{
+  "id": "cand_12",
+  "project_id": "proj_demo",
+  "run_id": "run_001",
+  "schema_version": "1.0",
+  "spec": null,
+  "raw_output": {
+    "title": "Borrar un ítem lo quita de la búsqueda",
+    "source": { "method": "DELETE", "path": "/items/{id}" }
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "prompt_version": "gen_v1",
+    "generated_at": "2026-11-14T15:02:11Z"
+  },
+  "filter_result": {
+    "passed": false,
+    "stage": "schema",
+    "reason": "not_executable",
+    "detail": "source.method: Input should be 'GET' or 'HEAD'; followups: Field required; ..."
+  },
+  "status": "discarded"
+}

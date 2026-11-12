@@ -1,0 +1,26 @@
+{
+  "title": "Reducir limit devuelve un subconjunto",
+  "description": "Al bajar el limit de una búsqueda, los resultados obtenidos deben estar contenidos en los de la búsqueda original.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": { "q": "jazz", "limit": 20 }
+  },
+  "followups": [
+    {
+      "transformations": [{ "op": "scale_param", "param": "limit", "factor": 0.5 }]
+    }
+  ],
+  "relation": {
+    "type": "subset",
+    "source_selector": "$.results[*].id",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se divide limit entre 2 (20 -> 10) manteniendo la misma consulta.",
+  "expected_relation": "results(limit=10) ⊆ results(limit=20)",
+  "rationale": "Detecta APIs que ignoran limit, que ordenan de forma no determinista entre páginas o que filtran distinto según el tamaño de página.",
+  "input_variants": [
+    { "query_params": { "q": "rock" } },
+    { "query_params": { "q": "blues", "limit": 8 } }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "id": "cand_01",
+  "project_id": "proj_demo",
+  "run_id": "run_001",
+  "schema_version": "1.0",
+  "spec": {
+    "title": "Reducir limit devuelve un subconjunto",
+    "description": "Al bajar el limit de una búsqueda, los resultados obtenidos deben estar contenidos en los de la búsqueda original.",
+    "source": { "method": "GET", "path": "/search", "query_params": { "q": "jazz", "limit": 20 } },
+    "followups": [{ "transformations": [{ "op": "scale_param", "param": "limit", "factor": 0.5 }] }],
+    "relation": { "type": "subset", "source_selector": "$.results[*].id", "direction": "followup_in_source" },
+    "transformation_logic": "Se divide limit entre 2 (20 -> 10) manteniendo la misma consulta.",
+    "expected_relation": "results(limit=10) ⊆ results(limit=20)",
+    "rationale": "Detecta APIs que ignoran limit o que ordenan de forma no determinista."
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "prompt_version": "gen_v1",
+    "generated_at": "2026-11-14T15:02:11Z"
+  },
+  "scores": {
+    "semantic_validity": { "rules_passed": true, "llm_score": 0.92, "llm_reason": "limit y q existen en GET /search; results es un arreglo.", "score": 0.92 },
+    "fault_revealing": { "rules_passed": true, "llm_score": 0.8, "llm_reason": "Paginación y límites son fuente frecuente de defectos.", "score": 0.8 },
+    "max_similarity": 0.41,
+    "combined": 0.86
+  },
+  "filter_result": { "passed": true },
+  "execution": {
+    "verdict": "violation",
+    "executed_at": "2026-11-14T15:03:40Z",
+    "instances": [
+      {
+        "index": 0,
+        "verdict": "violation",
+        "message": "2 ids del follow-up no están en la respuesta fuente: [87, 91]",
+        "source": {
+          "method": "GET",
+          "url": "http://sut-demo:8001/search?q=jazz&limit=20",
+          "status_code": 200,
+          "elapsed_ms": 34.2,
+          "response_excerpt": "{\"total\": 57, \"results\": [{\"id\": 3, ...}, ...]}",
+          "selected_excerpt": "[3, 5, 8, 12, 14, 19, 21, 22, 30, 33, 41, 44, 45, 50, 52, 60, 61, 70, 72, 80]"
+        },
+        "followups": [
+          {
+            "method": "GET",
+            "url": "http://sut-demo:8001/search?q=jazz&limit=10",
+            "status_code": 200,
+            "elapsed_ms": 29.8,
+            "response_excerpt": "{\"total\": 57, \"results\": [{\"id\": 3, ...}, ...]}",
+            "selected_excerpt": "[3, 5, 8, 12, 14, 19, 21, 22, 87, 91]"
+          }
+        ]
+      }
+    ]
+  },
+  "status": "pending_review"
+}
