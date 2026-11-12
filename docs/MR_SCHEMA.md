@@ -100,7 +100,7 @@ como JSON con claves ordenadas, así que se pueden comparar objetos completos.
 |---|---|
 | `pass` | La relación se cumplió en todas las instancias |
 | `violation` | Se rompió en al menos una instancia, así que hay un **posible fallo** en la SUT |
-| `error` | La petición falló, la respuesta no fue 2xx o el selector no devolvió nada |
+| `error` | La petición falló, la respuesta no fue 2xx o JSON válido, el selector apunta a un campo que no existe, o la relación no se pudo evaluar (p. ej. `measure=value` sin un único número). Un arreglo existente pero vacío **no** es error: la relación se evalúa y, si todas las selecciones están vacías, el mensaje lo marca como evidencia débil |
 | `skipped` | No se ejecutó |
 
 El veredicto global se agrega con la prioridad `violation > error > pass` (`ExecutionResult.aggregate`).
