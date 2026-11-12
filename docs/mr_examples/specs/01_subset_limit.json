@@ -18,7 +18,7 @@
   },
   "transformation_logic": "Se divide limit entre 2 (20 -> 10) manteniendo la misma consulta.",
   "expected_relation": "results(limit=10) ⊆ results(limit=20)",
-  "rationale": "Detecta APIs que ignoran limit, que ordenan de forma no determinista entre páginas o que filtran distinto según el tamaño de página.",
+  "rationale": "Detecta APIs cuyo orden o filtrado cambia según el tamaño de página (p. ej. ordenan distinto las páginas pequeñas). Ojo: no detecta un limit ignorado, porque 20 ⊆ 20.",
   "input_variants": [
     { "query_params": { "q": "rock" } },
     { "query_params": { "q": "blues", "limit": 8 } }
