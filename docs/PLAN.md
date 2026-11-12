@@ -135,7 +135,7 @@ Ruta crítica: **contrato MR (D0) → generador+filtros+ejecutor (Daniel) → in
 - **Daniel**: `backend/app/models/mr.py` (MR, transformaciones, relaciones) + `docs/MR_SCHEMA.md` con 3 ejemplos. **Congelado al final del día.**
 - **Nestor**: scaffold monorepo, `uv`, FastAPI `/health`, `docker-compose.yml` dev (mongo+backend+frontend), `ci.yml` (ruff, pytest, build frontend). Crear instancia EC2 t3.medium + security group + subdominio DuckDNS.
 - **Isaac**: scaffold Vite+React+TS+Tailwind+shadcn, layout/sidebar, router, cliente API, MSW con mocks basados en el contrato MR.
-- Ramas: `main` (protegida, despliega), `develop` (integración), `feat/<area>-<tema>`; PR a `develop` con 1 revisión + CI verde.
+- Git: todos trabajan directamente en `develop` (sin ramas de feature), `pull --rebase` antes de cada push, commits pequeños por área. `main` solo recibe merges de `develop` en los hitos y dispara el despliegue.
 
 ### Días 1–3 — jue 12 a sáb 14 · Construcción en paralelo
 - **Daniel**: `LLMProvider` + `AnthropicProvider` (tool use, conteo de tokens, reintentos) y stubs OpenAI/Gemini; `context_extractor`; prompt `gen_v1` + `generator`; reglas semánticas y de fault-revealing + chequeos LLM; diversidad con fastembed; `scorer`; `executor` (transformaciones, JSONPath, 8 comparadores, caché); `orchestrator`. Tests con LLM falso.
@@ -191,7 +191,7 @@ Ruta crítica: **contrato MR (D0) → generador+filtros+ejecutor (Daniel) → in
 
 ## 6. Trabajo con asistentes IA (Claude/Codex)
 
-- `AGENTS.md` (y `CLAUDE.md` que lo referencia) en la raíz con: estructura del repo, comandos (`uv run pytest`, `npm run dev`, `docker compose up`), convenciones (ruff/black, ESLint/Prettier, nombres de ramas, commits convencionales), regla de **no modificar `models/mr.py` ni `docs/API.md` sin PR revisado por Daniel/Nestor**, y "solo GET/HEAD contra SUTs".
+- `AGENTS.md` (y `CLAUDE.md` que lo referencia) en la raíz con: estructura del repo, comandos (`uv run pytest`, `npm run dev`, `docker compose up`), convenciones (ruff/black, ESLint/Prettier, nombres de ramas, commits convencionales), regla de **no modificar `models/mr.py` ni `docs/API.md` sin acordarlo con Daniel/Nestor**, y "solo GET/HEAD contra SUTs".
 - Cada persona trabaja en su carpeta para evitar conflictos; cambios de contrato solo por PR.
 - Daily de 15 min (estado vs. hito, bloqueos).
 
@@ -202,7 +202,7 @@ Ruta crítica: **contrato MR (D0) → generador+filtros+ejecutor (Daniel) → in
 - **Unitarias**: `uv run pytest` en backend (extractor con OpenAPIs de muestra, cada regla del filtro, cada comparador del ejecutor, diversidad con vectores fijos, RBAC por endpoint) usando un `FakeLLMProvider`.
 - **Integración**: test que levanta `sut-demo` con un fallo activo (p. ej. `ignore_limit`) y comprueba que una MR `subset` sobre `limit` termina en `violation`, y sin fallos en `pass`.
 - **E2E manual** en cada hito: flujo completo con los 3 roles en local (M1) y en la URL desplegada (M2).
-- **CI**: lint + tests + build en cada PR; deploy verificado con `GET /health` tras el despliegue.
+- **CI**: lint + tests + build en cada push a `develop`; deploy verificado con `GET /health` tras el despliegue.
 
 ---
 
