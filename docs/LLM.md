@@ -11,11 +11,11 @@ Responsable: Daniel. Todos los valores se pueden cambiar en `LLMSettings` (el Ad
 
 | Parámetro (`LLMSettings`) | Valor | Rango permitido |
 |---|---|---|
-| `provider` | `anthropic` | `anthropic` (`openai` y `gemini` son stubs que fallan con un mensaje claro) |
-| `generation_model` | `claude-sonnet-5-5` | cualquier id de modelo |
+| `provider` | `anthropic` | `anthropic` · `gemini` (`openai` es un stub que falla con un mensaje claro) |
+| `generation_model` | `claude-sonnet-5-5` (Gemini: `gemini-4-hydrogen`) | cualquier id de modelo |
 | `generation_effort` | `medium` | `low` · `medium` · `high` · `xhigh` · `max` |
 | `generation_max_tokens` | 32 000 | 1 024 – 128 000 |
-| `verification_model` | `claude-haiku-5-5` | cualquier id de modelo |
+| `verification_model` | `claude-haiku-5-5` (Gemini: `gemini-3.5-flash-lite`) | cualquier id de modelo |
 | `verification_effort` | `low` | igual que arriba |
 | `verification_max_tokens` | 4 000 | 256 – 128 000 |
 | `max_candidates` | 20 | 1 – 50 |
@@ -167,10 +167,30 @@ Filtros (`FilterSettings`, también editables por el Admin):
 - Las MRs descartadas no se ejecutan. Para RQ2 (¿alguna redundante detectaba un fallo que las elegidas no?),
   `experiments/run_mutants.py` las ejecutará aparte.
 
+### D14. Proveedor Gemini como alternativa
+
+- **Decisión**: `GeminiProvider` con el SDK oficial `google-genai` (`client.aio.models.generate_content`).
+  Con `provider = "gemini"`, los modelos por defecto pasan a `gemini-4-hydrogen` (generación) y
+  `gemini-3.5-flash-lite` (verificación), salvo que se fijen explícitamente.
+- **Por qué**: Google AI Studio tiene un nivel gratuito sin tarjeta; la suscripción Claude Pro no incluye API.
+- **Modelos**: la documentación de Gemini recomienda Hydrogen o 3.5 Flash-Lite para proyectos nuevos.
+  `gemini-4-argon` razona mejor (opción si el nivel gratuito lo incluye). Los `gemini-2.5-*` están deprecados.
+- **Salida estructurada**: `response_mime_type="application/json"` + `response_json_schema`. Se envía el mismo
+  esquema de `wire.py` con `const` convertido a `enum` de un valor (Gemini no documenta `const`). Pydantic valida
+  igual que con Claude.
+- **Esfuerzo**: `effort` → `thinking_level` (`low`, `medium`, `high`; `xhigh`/`max` → `XHIGH` solo en Hydrogen,
+  `HIGH` en el resto). Sin `temperature` (los modelos Gemini 4 la ignoran).
+- **Corte y rechazo**: `finish_reason` `MAX_TOKENS` → truncado; `SAFETY`, `PROHIBITED_CONTENT`, `RECITATION`, etc.
+  o un `block_reason` del prompt → rechazo. Los reintentos de 408/429/5xx los hace el SDK.
+- **Sin fallbacks del servidor**: `enable_fallbacks` solo aplica a Claude.
+- **Para el paper**: si los experimentos se corren con Gemini, se reporta así; la procedencia de cada MR guarda
+  proveedor y modelo. Revisar en los términos del nivel gratuito si Google usa los datos enviados (solo enviamos
+  OpenAPI públicos y MRs, nunca respuestas de la SUT ni datos personales).
+
 ## 3. Pendiente de verificar con el API real
 
 Antes: copiar `backend/.env.example` a `backend/.env` y poner la key de la Claude Console (la suscripción Claude
-Pro no incluye acceso al API). Los scripts `smoke_*` leen ese archivo solos. Sin key, el run termina con
+Pro no incluye acceso al API) o la de Google AI Studio (`GEMINI_API_KEY`, con `--provider gemini`). Los scripts `smoke_*` leen ese archivo solos. Sin key, el run termina con
 `Anthropic: falta ANTHROPIC_API_KEY` en vez de fallar con un error interno.
 
 Los tests usan `FakeLLMProvider` y un cliente SDK falso; no llaman a Claude. Falta comprobar con una llamada real:
@@ -192,9 +212,13 @@ cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with ht
   tests/fixtures/openapi_search.yaml -n 8
 ```
 
+Con Gemini: agregar `--with google-genai` y `--provider gemini`. Con Gemini falta comprobar que el API acepta el
+esquema (`anyOf`, `$ref`/`$defs`, `enum`) y los niveles de `thinking_level` de cada modelo.
+
 ## 4. Reglas fijas (no configurables)
 
-- La API key va en `backend/.env` (`ANTHROPIC_API_KEY`) y la lee el SDK; nunca se guarda en `settings` ni en Mongo.
+- Las API keys van en `backend/.env` (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`) y las lee cada SDK; nunca se guardan en
+  `settings` ni en Mongo.
 - El texto del OpenAPI se sanea, se trunca y va delimitado en `<api_spec>`; los intentos de cerrar el delimitador se
   neutralizan.
 - Las respuestas de la SUT nunca se envían al LLM; los chequeos reciben solo el OpenAPI y la MR, ambos delimitados

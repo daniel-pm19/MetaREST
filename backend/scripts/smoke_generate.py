@@ -29,7 +29,8 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("spec", type=Path)
     parser.add_argument("-n", type=int, default=5, help="relations to request (default 5)")
-    parser.add_argument("--model", default=LLMSettings().generation_model)
+    parser.add_argument("--provider", choices=["anthropic", "gemini"], default="anthropic")
+    parser.add_argument("--model", help="generation model (default: the provider's default)")
     parser.add_argument("--effort", default=LLMSettings().generation_effort)
     parser.add_argument("--base-url", help="if given, execute the valid MRs against this SUT")
     parser.add_argument("--min-interval", type=float, default=0.0, help="seconds between SUT requests (Crossref: 1)")
@@ -44,8 +45,10 @@ async def main() -> None:
 
     context = extract_context(args.spec.read_text(encoding="utf-8"))
     print(f"API: {context.title} — {len(context.operations)} operaciones GET/HEAD")
-    provider = create_provider(LLMSettings(enable_fallbacks=not args.no_fallbacks))
-    result = await generate_relations(context, provider, model=args.model, n=args.n, effort=args.effort)
+    settings = LLMSettings(provider=args.provider, enable_fallbacks=not args.no_fallbacks)
+    provider = create_provider(settings)
+    model = args.model or settings.generation_model
+    result = await generate_relations(context, provider, model=model, n=args.n, effort=args.effort)
 
     print(f"modelo: {result.model} (fallback: {result.fallback_used}) · prompt: {result.prompt_id}")
     print(f"tokens: entrada {result.usage.input_tokens}, salida {result.usage.output_tokens}")

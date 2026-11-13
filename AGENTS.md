@@ -31,7 +31,7 @@ cd frontend && npm run gen:types                         # regenera src/api/type
 (Se irán actualizando a medida que se creen los scaffolds del Día 0.)
 
 Requisitos del pipeline para `backend/pyproject.toml`:
-- Dependencias: `pydantic>=2.9`, `httpx`, `jsonpath-ng`, `pyyaml`, `jinja2`, `anthropic>=2.8`, `fastembed`.
+- Dependencias: `pydantic>=2.9`, `httpx`, `jsonpath-ng`, `pyyaml`, `jinja2`, `anthropic>=2.8`, `google-genai>=3.3`, `fastembed`.
 - Dev: `pytest`, `pytest-asyncio`.
 - `[tool.pytest.ini_options]`: `pythonpath = ["."]`, `testpaths = ["tests"]`, `asyncio_default_fixture_loop_scope = "function"`.
 
@@ -39,7 +39,7 @@ Mientras no exista `pyproject.toml`, los tests se corren con:
 
 ```bash
 cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with httpx --with jsonpath-ng \
-  --with pyyaml --with jinja2 --with anthropic --with pytest --with pytest-asyncio python -m pytest -q
+  --with pyyaml --with jinja2 --with anthropic --with google-genai --with pytest --with pytest-asyncio python -m pytest -q
 ```
 
 ## Contratos (no romper)

@@ -158,7 +158,7 @@ async def test_fake_provider_script():
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("name", ["openai", "gemini"])
+@pytest.mark.parametrize("name", ["openai"])
 async def test_stub_providers(name):
     provider = create_provider(LLMSettings(provider=name))
     assert provider.name == name

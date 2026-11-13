@@ -1,4 +1,4 @@
-"""LLM abstraction: one interface, interchangeable providers (Anthropic implemented)."""
+"""LLM abstraction: one interface, interchangeable providers (Anthropic and Gemini implemented)."""
 
 from app.pipeline.llm.base import (
     Effort,

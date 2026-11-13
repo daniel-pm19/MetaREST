@@ -1,7 +1,7 @@
 """Placeholders that keep the multi-provider design explicit.
 
 They satisfy ``LLMProvider`` so the factory, settings and UI can list them, but the
-MVP only implements Anthropic. Implementing one = filling ``complete_json`` with that
+MVP implements Anthropic and Gemini. Implementing one = filling ``complete_json`` with that
 vendor's structured-output call and mapping its usage/stop reason to ``LLMResponse``.
 """
 
@@ -19,7 +19,3 @@ class _NotImplementedProvider:
 
 class OpenAIProvider(_NotImplementedProvider):
     name = "openai"
-
-
-class GeminiProvider(_NotImplementedProvider):
-    name = "gemini"

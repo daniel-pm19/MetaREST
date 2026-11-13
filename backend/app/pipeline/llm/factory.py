@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from app.pipeline.llm.base import LLMNotConfiguredError, LLMProvider
 from app.pipeline.llm.config import LLMSettings
-from app.pipeline.llm.stub_providers import GeminiProvider, OpenAIProvider
+from app.pipeline.llm.stub_providers import OpenAIProvider
 
 
 def create_provider(settings: LLMSettings) -> LLMProvider:
@@ -19,7 +19,9 @@ def create_provider(settings: LLMSettings) -> LLMProvider:
         case "openai":
             return OpenAIProvider()
         case "gemini":
-            return GeminiProvider()
+            from app.pipeline.llm.gemini_provider import GeminiProvider  # SDK imported only when used
+
+            return GeminiProvider(timeout=settings.timeout_seconds, max_retries=settings.max_retries)
         case "fake":
             raise LLMNotConfiguredError("el proveedor 'fake' solo se usa en tests; instáncialo directamente")
     raise LLMNotConfiguredError(f"proveedor desconocido: {settings.provider}")  # pragma: no cover
