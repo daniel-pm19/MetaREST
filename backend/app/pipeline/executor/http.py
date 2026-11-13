@@ -3,7 +3,9 @@
 * Only GET/HEAD — enforced here as well as in the MR contract (defense in depth).
 * In-memory response cache keyed by (method, url): identical requests inside a
   run hit the SUT once (mitigates rate limits of public APIs).
-* Bounded concurrency and small retry/backoff for 429/5xx and transport errors.
+* Bounded concurrency, optional minimum interval between requests (public APIs such as
+  Crossref allow 1 req/s), and small retry/backoff for 429/5xx and transport errors.
+* Identifies itself with a generic User-Agent (no personal data).
 * Auth headers come from the caller (resolved from .env), never from the MR.
 """
 
@@ -21,6 +23,7 @@ import httpx
 from app.models.mr import HttpExchange, HttpMethod, ParamValue, RequestSpec
 
 RETRY_STATUS = {429, 502, 503, 504}
+USER_AGENT = "MetaREST/0.1 (academic metamorphic testing tool)"
 EXCERPT_LIMIT = 4000
 
 
@@ -69,6 +72,7 @@ class SUTClient:
         headers: dict[str, str] | None = None,
         timeout: float = 10.0,
         max_concurrency: int = 5,
+        min_interval: float = 0.0,
         max_retries: int = 2,
         backoff: float = 0.5,
         transport: httpx.AsyncBaseTransport | None = None,
@@ -76,10 +80,16 @@ class SUTClient:
         self.base_url = base_url
         self.max_retries = max_retries
         self.backoff = backoff
+        self.min_interval = min_interval
         self._client = httpx.AsyncClient(
-            headers=headers or {}, timeout=timeout, transport=transport, follow_redirects=True
+            headers={"User-Agent": USER_AGENT, **(headers or {})},
+            timeout=timeout,
+            transport=transport,
+            follow_redirects=True,
         )
         self._sem = asyncio.Semaphore(max_concurrency)
+        self._rate_lock = asyncio.Lock()
+        self._next_slot = 0.0
         self._cache: dict[tuple[str, str], FetchResult] = {}
         self._inflight: dict[tuple[str, str], asyncio.Future[FetchResult]] = {}
         self.requests_sent = 0
@@ -123,12 +133,25 @@ class SUTClient:
         finally:
             self._inflight.pop(key, None)
 
+    async def _throttle(self) -> None:
+        """Space request starts at least ``min_interval`` seconds apart (retries included)."""
+        if self.min_interval <= 0:
+            return
+        async with self._rate_lock:
+            loop = asyncio.get_running_loop()
+            wait = self._next_slot - loop.time()
+            if wait > 0:
+                await asyncio.sleep(wait)
+            self._next_slot = loop.time() + self.min_interval
+
     async def _send(self, method: HttpMethod, url: str) -> FetchResult:
         attempt = 0
         while True:
             start = time.perf_counter()
             try:
                 async with self._sem:
+                    await self._throttle()
+                    start = time.perf_counter()  # elapsed excludes queueing
                     self.requests_sent += 1
                     resp = await self._client.request(method.value, url)
             except httpx.HTTPError as exc:

@@ -11,7 +11,7 @@ El artículo propone **MetaREST**: una herramienta que (1) extrae contexto de un
 | LLM | Abstracción multi-proveedor; implementación inicial **Anthropic Claude**. Embeddings **locales** |
 | Despliegue | **AWS EC2 + Docker Compose + Nginx/HTTPS + GitHub Actions CI/CD** (cuenta AWS sí, **sin dominio** → DuckDNS + Let's Encrypt) |
 | Auth | **JWT + bcrypt + 3 roles** (Admin, QA Auditor, Observer) en API y UI |
-| SUTs | **3 APIs**: 1 API demo propia con fallos inyectables + 2 APIs públicas |
+| SUTs | **3 APIs**: 1 API demo propia con fallos inyectables + 2 APIs públicas (PokeAPI y Crossref, ver `docs/SUTS.md`) |
 | Experimentos | Dentro del alcance: RQ1–RQ4, cobertura, SUS. Líneas base (tests tradicionales + MRs manuales) **escritas por el equipo** |
 | UI | Diseño libre, en español (las figuras del paper solo como referencia de vistas) |
 | Formato del plan | Este documento se versiona como `docs/PLAN.md` en el repo |
@@ -147,7 +147,7 @@ Ruta crítica: **contrato MR (D0) → generador+filtros+ejecutor (Daniel) → in
 - **Daniel**: afinar prompts/umbrales con la API demo y las 2 públicas; export JSON/CSV; script `experiments/run_mutants.py` (corre MRs aceptadas contra cada fallo de la API demo).
 - **Nestor**: métricas (`/metrics`, comparar runs), settings de Admin (LLM, umbrales, prompts), CRUD usuarios; `deploy.yml` (build → GHCR → SSH a EC2 → `compose pull && up -d`); HTTPS con certbot sobre DuckDNS; backup diario `mongodump`→S3 (retención 7 días); CloudWatch básico. **Suite pytest tradicional** para las 3 APIs (status, esquema, casos de borde).
 - **Isaac**: Revisión completa (aceptar/rechazar con justificación, evidencia, tiempo de revisión), Descartados, Comparar iteraciones, Dashboard, Trazabilidad, Admin; quitar mocks y usar tipos generados. **MRs manuales** (~5–8 por API, en `experiments/manual_mrs/` con el mismo esquema JSON para reutilizar el ejecutor).
-- **Selección de las 2 APIs públicas** (D4 a más tardar, responsable Daniel): criterios = OpenAPI disponible, endpoints GET con búsqueda/filtros/paginación, sin auth o con key gratuita, rate limit tolerable. Candidatas a evaluar: PokeAPI, JSONPlaceholder, REST Countries, Open Library — **decisión a confirmar con el equipo**.
+- **Selección de las 2 APIs públicas** (responsable Daniel): ✅ **PokeAPI y Crossref** (13-nov). Criterios, verificación y riesgos en `docs/SUTS.md`; specs curados en `experiments/specs/`.
 - **Hito M2 (lun 16, noche) = feature freeze**: app pública en `https://<sub>.duckdns.org`, despliegue automático al hacer push a `main`, los 3 roles funcionando.
 
 ### Días 6–7 — mar 17 a mié 18 · Experimentos (solo bugfix en código)

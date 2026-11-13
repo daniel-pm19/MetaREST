@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import asyncio
+import time
+
 import httpx
 import pytest
 
 from app.models.mr import MRSpec, RequestSpec, Verdict
 from app.pipeline.executor import SUTClient, UnsafeRequestError, build_url, execute_many, execute_mr
+from app.pipeline.executor.http import USER_AGENT
 from tests.conftest import load_example
 
 BASE = "http://sut.test"
@@ -198,3 +202,37 @@ async def test_execute_many_keeps_order(fake_sut):
     async with client(fake_sut()) as c:
         results = await execute_many(specs, c, concurrency=2)
     assert [r.verdict for r in results] == [Verdict.PASS, Verdict.ERROR, Verdict.PASS]
+
+
+@pytest.mark.asyncio
+async def test_min_interval_spaces_requests_and_sets_user_agent():
+    starts: list[float] = []
+    agents: set[str] = set()
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        starts.append(time.perf_counter())
+        agents.add(request.headers["user-agent"])
+        return httpx.Response(200, json={"ok": True})
+
+    async with SUTClient(BASE, transport=httpx.MockTransport(handler), min_interval=0.05, backoff=0) as c:
+        reqs = [RequestSpec(path="/search", query_params={"q": f"t{i}"}) for i in range(4)]
+        await asyncio.gather(*(c.fetch(r) for r in reqs))
+        await c.fetch(reqs[0])  # cache hit: not throttled, not sent
+
+    assert len(starts) == 4
+    gaps = [b - a for a, b in zip(starts, starts[1:], strict=False)]
+    assert min(gaps) >= 0.045, gaps
+    assert agents == {USER_AGENT}
+
+
+@pytest.mark.asyncio
+async def test_custom_headers_can_override_the_user_agent():
+    seen: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request.headers["user-agent"])
+        return httpx.Response(200, json={})
+
+    async with SUTClient(BASE, headers={"User-Agent": "team-bot"}, transport=httpx.MockTransport(handler)) as c:
+        await c.fetch(RequestSpec(path="/x"))
+    assert seen == ["team-bot"]

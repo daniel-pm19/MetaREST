@@ -32,6 +32,9 @@ async def main() -> None:
     parser.add_argument("--model", default=LLMSettings().generation_model)
     parser.add_argument("--effort", default=LLMSettings().generation_effort)
     parser.add_argument("--base-url", help="if given, execute the valid MRs against this SUT")
+    parser.add_argument("--min-interval", type=float, default=0.0, help="seconds between SUT requests (Crossref: 1)")
+    parser.add_argument("--max-concurrency", type=int, default=4, help="parallel SUT requests (Crossref: 1)")
+    parser.add_argument("--timeout", type=float, default=10.0, help="SUT request timeout in seconds (Crossref: 30)")
     parser.add_argument("--no-fallbacks", action="store_true", help="disable server-side refusal fallbacks")
     parser.add_argument("--out", type=Path, default=Path("../experiments/raw/smoke_result.json"))
     args = parser.parse_args()
@@ -56,7 +59,9 @@ async def main() -> None:
 
     executions = []
     if args.base_url and result.specs:
-        async with SUTClient(args.base_url) as client:
+        async with SUTClient(
+            args.base_url, min_interval=args.min_interval, max_concurrency=args.max_concurrency, timeout=args.timeout
+        ) as client:
             executions = await execute_many(result.specs, client)
     for i, spec in enumerate(result.specs):
         verdict = f" → {executions[i].verdict.value}" if executions else ""

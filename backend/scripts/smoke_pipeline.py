@@ -32,6 +32,9 @@ async def main() -> None:
     parser.add_argument("spec", type=Path)
     parser.add_argument("-n", type=int, default=8, help="MRs to request (default 8)")
     parser.add_argument("--base-url", help="execute the surviving MRs against this SUT")
+    parser.add_argument("--min-interval", type=float, default=0.0, help="seconds between SUT requests (Crossref: 1)")
+    parser.add_argument("--max-concurrency", type=int, default=4, help="parallel SUT requests (Crossref: 1)")
+    parser.add_argument("--timeout", type=float, default=10.0, help="SUT request timeout in seconds (Crossref: 30)")
     parser.add_argument("--no-llm-checks", action="store_true", help="filter with rules only")
     parser.add_argument("--no-fallbacks", action="store_true")
     parser.add_argument("--cache-dir", default="../.fastembed_cache", help="where the embedding model is stored")
@@ -51,7 +54,18 @@ async def main() -> None:
             print(f"… {running[0]}")
 
     async with AsyncExitStack() as stack:
-        sut = await stack.enter_async_context(SUTClient(args.base_url)) if args.base_url else None
+        sut = (
+            await stack.enter_async_context(
+                SUTClient(
+                    args.base_url,
+                    min_interval=args.min_interval,
+                    max_concurrency=args.max_concurrency,
+                    timeout=args.timeout,
+                )
+            )
+            if args.base_url
+            else None
+        )
         result = await run_pipeline(
             args.spec.read_text(encoding="utf-8"),
             project_id="smoke",
