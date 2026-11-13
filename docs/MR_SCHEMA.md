@@ -145,7 +145,13 @@ append-only `decisions`. El candidato solo refleja el `status` resultante.
   lote y los rechazos quedan como `not_executable`.
 - **Ejecutor (Daniel)**: llama a `spec.instances()` para obtener los pares `(fuente, [follow-ups])`,
   hace las peticiones con httpx, aplica los selectores con `jsonpath-ng` y evalúa la relación según la tabla del §4.
-- **Backend (Nestor)**: envuelve `MRCandidate` en un documento Beanie (colección `candidates`). Las
+- **Filtros (Daniel)**: llenan `scores` (`semantic_validity`, `fault_revealing`, `combined`, `max_similarity`) y
+  `filter_result`. Detalles y umbrales en [`LLM.md`](LLM.md).
+- **Orquestador (Daniel)**: `app.pipeline.orchestrator.run_pipeline()` devuelve todas las `MRCandidate` del run y
+  un `RunReport` (estado, tiempos, conteos y tokens por etapa). `on_progress` recibe el reporte cada vez que una
+  etapa empieza o termina, para actualizar el run en Mongo.
+- **Backend (Nestor)**: llama a `run_pipeline()` desde una background task, guarda `PipelineSettings` como
+  snapshot en el run, el `RunReport` en el run y cada `MRCandidate` en un documento Beanie (colección `candidates`). Las
   transiciones `pending_review → accepted/rejected` solo ocurren vía `POST /candidates/{id}/decision`.
 - **Frontend (Isaac)**: los tipos salen de `/openapi.json`. Mientras tanto, los ejemplos de
   `docs/mr_examples/candidates/` sirven como mocks (MSW).

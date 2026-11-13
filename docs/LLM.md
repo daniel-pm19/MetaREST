@@ -1,7 +1,9 @@
 # Capa LLM: decisiones de configuración
 
 Código: [`backend/app/pipeline/llm/`](../backend/app/pipeline/llm/), [`generator.py`](../backend/app/pipeline/generator.py),
-[`wire.py`](../backend/app/pipeline/wire.py), [`prompts/`](../backend/app/pipeline/prompts/).
+[`wire.py`](../backend/app/pipeline/wire.py), [`prompts/`](../backend/app/pipeline/prompts/),
+[`filters/`](../backend/app/pipeline/filters/), [`embeddings.py`](../backend/app/pipeline/embeddings.py),
+[`orchestrator.py`](../backend/app/pipeline/orchestrator.py).
 Responsable: Daniel. Todos los valores se pueden cambiar en `LLMSettings` (el Admin los edita desde la colección
 `settings`). Lo que **no** se puede cambiar desde ahí son las reglas de seguridad del §4.
 
@@ -20,6 +22,19 @@ Responsable: Daniel. Todos los valores se pueden cambiar en `LLMSettings` (el Ad
 | `enable_fallbacks` | `true` | — |
 | `timeout_seconds` | 600 | > 0 |
 | `max_retries` | 2 | 0 – 10 |
+
+Filtros (`FilterSettings`, también editables por el Admin):
+
+| Parámetro | Valor | Notas |
+|---|---|---|
+| `semantic_weight` / `fault_weight` | 0.5 / 0.5 | Pesos del score combinado (se normalizan) |
+| `min_semantic` | 0.6 | Por debajo: `invalid_semantics` |
+| `min_fault_revealing` | 0.5 | Por debajo: `low_fault_revealing` |
+| `similarity_threshold` | 0.975 | Coseno ≥ umbral: `redundant` (ver D12) |
+| `use_llm_checks` | `true` | `false` = solo reglas |
+| `llm_concurrency` | 4 | Chequeos LLM en paralelo |
+| `semantic_prompt` / `fault_prompt` | `semcheck_v1` / `faultcheck_v1` | |
+| `embedding_model` | `BAAI/bge-small-en-v1.5` | fastembed (ONNX), ~67 MB |
 
 ## 2. Decisiones
 
@@ -102,6 +117,56 @@ Responsable: Daniel. Todos los valores se pueden cambiar en `LLMSettings` (el Ad
 - **Errores**: se traducen a `LLMProviderError` con `retriable` y un mensaje en español (credenciales, petición
   inválida, límite de uso, error del servidor), que el orquestador guarda en el run.
 
+### D10. Filtros: reglas primero, LLM después
+
+- **Decisión**: cada criterio (validez semántica y potencial de revelar fallos) corre primero reglas deterministas
+  en Python y solo si pasan hace el chequeo LLM. Si una regla falla, el score es 0 y la MR se descarta sin gastar
+  tokens; el detalle del descarte lista las reglas violadas en español.
+- **Reglas semánticas** (contra el OpenAPI): el endpoint y los parámetros existen; tipos, `enum`, mínimo y máximo
+  se respetan **en las peticiones ya derivadas** (incluye follow-ups y variantes); los parámetros obligatorios
+  siguen presentes; los selectores apuntan a campos de la respuesta; las relaciones de conjunto usan selectores
+  que devuelven colecciones; `measure=value` usa un único número; no se usa HEAD (no tiene cuerpo).
+- **Reglas de potencial de fallo**: un follow-up idéntico a la fuente es tautológico (salvo en `equality` y
+  `equivalence`, donde comprueba determinismo); contar un único valor con `count_leq` es trivial.
+- **Score**: reglas violadas → 0; reglas OK + LLM → el score del LLM; reglas OK sin LLM → 1.0. Combinado =
+  promedio ponderado de ambos criterios.
+
+### D11. Un chequeo LLM fallido no tumba el run
+
+- **Decisión**: si el chequeo de una MR falla (error del proveedor, rechazo o salida inválida), esa MR queda con
+  el resultado de las reglas (score 1.0), `llm_reason` explica el fallo y el run registra un aviso.
+- **Por qué**: es preferible que el QA vea una MR más a perder un run entero por un error transitorio.
+- **Ojo para los experimentos**: un run con avisos de chequeos fallidos no es comparable para RQ1; hay que repetirlo.
+
+### D12. Diversidad con firma estructural y umbral 0.975
+
+- **Decisión**: se embebe una **firma** de la MR (relación, selectores, endpoint, nombres de parámetros y
+  transformaciones), no su texto libre. Los valores concretos de la fuente no entran: la misma MR con `q=jazz`
+  o `q=rock` prueba la misma propiedad. Selección greedy por score combinado; las que superan el umbral frente a
+  una ya elegida quedan como `redundant` con `duplicate_of`.
+- **Por qué la firma**: es independiente del idioma (el modelo `bge-small` es de inglés y los textos están en
+  español) y no depende de cómo redactó el LLM.
+- **Calibración del umbral** (bge-small sobre los ejemplos de `docs/mr_examples/specs` y variantes):
+
+  | Pares | Similitud |
+  |---|---|
+  | MRs distintas | 0.83 – 0.93 |
+  | Misma transformación, otra relación | 0.969 |
+  | Misma MR con otros valores (factor, categoría, orden invertido) | 0.98 – 0.999 |
+
+  0.975 separa ambos grupos en esta muestra. El margen es chico, así que hay que reajustarlo con MRs reales de las
+  3 APIs antes del Hito M3.
+
+### D13. Orquestador
+
+- `run_pipeline()` corre extracción → generación → semántica → potencial de fallo → diversidad → ejecución y
+  devuelve **todas** las candidatas (incluidas las descartadas, que hacen falta para RQ1 y RQ2) y un `RunReport`
+  con estado, duración, conteos y tokens por etapa.
+- Los fallos esperados (spec inválida, proveedor caído, rechazo) no lanzan excepción: quedan en `report.error`
+  y las etapas siguientes se marcan como `skipped`.
+- Las MRs descartadas no se ejecutan. Para RQ2 (¿alguna redundante detectaba un fallo que las elegidas no?),
+  `experiments/run_mutants.py` las ejecutará aparte.
+
 ## 3. Pendiente de verificar con el API real
 
 Los tests usan `FakeLLMProvider` y un cliente SDK falso; no llaman a Claude. Falta comprobar con una llamada real:
@@ -115,12 +180,21 @@ cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with ht
   --with pyyaml --with jinja2 --with anthropic python -m scripts.smoke_generate tests/fixtures/openapi_search.yaml -n 5
 ```
 
+Prueba del pipeline completo (generación + chequeos con Haiku + embeddings; descarga el modelo la primera vez):
+
+```bash
+cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with httpx --with jsonpath-ng \
+  --with pyyaml --with jinja2 --with anthropic --with fastembed python -m scripts.smoke_pipeline \
+  tests/fixtures/openapi_search.yaml -n 8
+```
+
 ## 4. Reglas fijas (no configurables)
 
 - La API key va en `backend/.env` (`ANTHROPIC_API_KEY`) y la lee el SDK; nunca se guarda en `settings` ni en Mongo.
 - El texto del OpenAPI se sanea, se trunca y va delimitado en `<api_spec>`; los intentos de cerrar el delimitador se
   neutralizan.
-- Las respuestas de la SUT nunca se envían al LLM.
+- Las respuestas de la SUT nunca se envían al LLM; los chequeos reciben solo el OpenAPI y la MR, ambos delimitados
+  (`<api_spec>`, `<mr>`), porque la MR también la escribió un LLM que leyó el OpenAPI.
 - Toda salida del LLM se valida con Pydantic antes de usarse.
 - Los tests y la CI nunca llaman al LLM real.
 
