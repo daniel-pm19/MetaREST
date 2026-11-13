@@ -136,9 +136,13 @@ append-only `decisions`. El candidato solo refleja el `status` resultante.
 
 ## 7. Uso en cada módulo
 
-- **Generador (Daniel)**: usa `MRGenerationOutput.model_json_schema()` como `input_schema` de la
-  herramienta (tool use). La salida se valida **ítem por ítem** con `parse_generated_relations()`,
-  de modo que una MR mal formada no descarta todo el lote y los rechazos quedan como `not_executable`.
+- **Generador (Daniel)**: pide la salida con *structured outputs* (`output_config.format`), no con tool use
+  forzado (Sonnet 5.5 y Opus 5.5 lo rechazan con 400). El esquema enviado es `MRGenerationOutput`
+  adaptado por `app/pipeline/wire.py`: el API no admite mapas libres ni restricciones como `pattern` o
+  `maxLength`, así que `query_params`/`path_params` viajan como listas `[{name, value}]` y se convierten de
+  vuelta antes de validar. Las restricciones eliminadas las sigue aplicando Pydantic. La salida se valida
+  **ítem por ítem** con `parse_generated_relations()`, de modo que una MR mal formada no descarta todo el
+  lote y los rechazos quedan como `not_executable`.
 - **Ejecutor (Daniel)**: llama a `spec.instances()` para obtener los pares `(fuente, [follow-ups])`,
   hace las peticiones con httpx, aplica los selectores con `jsonpath-ng` y evalúa la relación según la tabla del §4.
 - **Backend (Nestor)**: envuelve `MRCandidate` en un documento Beanie (colección `candidates`). Las
