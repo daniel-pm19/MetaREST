@@ -544,7 +544,7 @@ class MRCandidate(_Model):
 
 
 def json_schemas() -> dict[str, dict[str, Any]]:
-    """JSON Schemas exported to docs/schemas/ (LLM tool input + frontend mocks)."""
+    """JSON Schemas exported to docs/schemas/ (reference + frontend mocks; the LLM gets app.pipeline.wire)."""
     return {
         "mr_spec": MRSpec.model_json_schema(),
         "mr_generation_output": MRGenerationOutput.model_json_schema(),
