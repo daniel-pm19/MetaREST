@@ -42,6 +42,11 @@ UNSUPPORTED_KEYWORDS = {
 # Free-form maps of the contract that are sent to the LLM as [{name, value}] lists.
 MAP_FIELDS = frozenset({"path_params", "query_params"})
 
+# Fields optional in the contract (they have a default) but required on the wire: the default
+# is almost never what the LLM means. Gemini omitted source_selector in 4/10 MRs, which then
+# defaulted to "$" and were discarded (smoke run on PokeAPI, 13-nov-2026).
+WIRE_REQUIRED = {"RelationSpec": ("source_selector",)}
+
 
 class WireSchemaError(ValueError):
     pass
@@ -108,8 +113,14 @@ def to_api_schema(schema: dict[str, Any]) -> tuple[dict[str, Any], set[str]]:
 
 
 def generation_schema() -> dict[str, Any]:
-    """Schema sent as ``output_config.format`` during MR generation."""
+    """Schema sent as structured-output format during MR generation."""
     schema, _ = to_api_schema(MRGenerationOutput.model_json_schema())
+    for name, fields in WIRE_REQUIRED.items():
+        definition = schema["$defs"][name]
+        definition["required"] = [
+            *definition.get("required", []),
+            *(f for f in fields if f not in definition.get("required", [])),
+        ]
     return schema
 
 

@@ -96,3 +96,11 @@ def test_prompt_variables_are_strict():
         PromptTemplate.builtin("gen_v1").render(n=3)
     with pytest.raises(KeyError):
         PromptTemplate.builtin("gen_v99")
+
+
+def test_selector_is_required_on_the_wire_but_optional_in_the_contract():
+    from app.models.mr import RelationSpec
+    from app.pipeline.wire import generation_schema
+
+    assert "source_selector" in generation_schema()["$defs"]["RelationSpec"]["required"]
+    assert RelationSpec(type="equality").source_selector == "$"  # contract default unchanged

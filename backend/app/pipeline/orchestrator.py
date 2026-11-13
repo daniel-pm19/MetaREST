@@ -363,7 +363,7 @@ class _Run:
                     d = decisions[c.id]
                     c.scores.max_similarity = d.max_similarity
                     if not d.selected:
-                        detail = f"similitud {d.max_similarity:.2f} con {d.duplicate_of} (umbral {threshold:.2f})"
+                        detail = f"similitud {d.max_similarity:.2f} con {d.duplicate_of} (umbral {threshold:g})"
                         self._discard(c, DiscardReason.REDUNDANT, detail, duplicate_of=d.duplicate_of)
                 st.detail = f"{len(alive) - len(self._alive())} redundantes"
             survivors = self._alive()

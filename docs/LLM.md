@@ -212,8 +212,20 @@ cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with ht
   tests/fixtures/openapi_search.yaml -n 8
 ```
 
-Con Gemini: agregar `--with google-genai` y `--provider gemini`. Con Gemini falta comprobar que el API acepta el
-esquema (`anyOf`, `$ref`/`$defs`, `enum`) y los niveles de `thinking_level` de cada modelo.
+Con Gemini: agregar `--with google-genai` y `--provider gemini`.
+
+**Verificado con Gemini real (13-nov-2026, `gemini-4-hydrogen` + `gemini-3.5-flash-lite`)**: el API acepta el
+esquema y los `thinking_level` usados. Resultados de las pruebas (salidas en `experiments/raw/`, no versionadas):
+
+| Spec | MRs | Tras el filtro | Ejecución | Tokens | Tiempo de generación |
+|---|---|---|---|---|---|
+| Fixture `openapi_search.yaml` | 8 | 8 | sin SUT real; contra el SUT falso: 0 falsos positivos, 3 de 4 fallos detectados | 33k | 33 s |
+| PokeAPI | 10 | 9 (1 `invalid_semantics`) | 9 `pass` | 46k | 37 s |
+| Crossref | 8 | 7 (1 `redundant`) | 7 `pass` (85 s a 1 req/s) | 68k | 38 s |
+
+Hallazgo: Gemini omitía `source_selector` (opcional en el contrato, por defecto `$`) en 4 de 10 MRs, que luego se
+descartaban. Ahora `wire.py` lo exige en el esquema que recibe el LLM (`WIRE_REQUIRED`); el contrato no cambia.
+Con Claude sigue pendiente la prueba real (falta key).
 
 ## 4. Reglas fijas (no configurables)
 
