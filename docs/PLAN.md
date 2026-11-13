@@ -81,7 +81,7 @@ El paper define `source_endpoint`, `target_endpoint`, `transformation_logic`, `e
 ### 1.2 Pipeline (POST /runs)
 
 1. **Extracción de contexto**: endpoints GET/HEAD, parámetros (tipo, enum, min/max, ejemplos), esquema de respuesta resumido. Descripciones del OpenAPI tratadas como datos no confiables (delimitadas en el prompt).
-2. **Generación** (`claude-sonnet-5-5`, configurable): N candidatas (tope configurable, p. ej. 30) vía tool use con el JSON Schema del MR. Registro de tokens.
+2. **Generación** (`claude-sonnet-5-5`, configurable): N candidatas (tope configurable, por defecto 20) con *structured outputs* y el JSON Schema del MR. Registro de tokens. Decisiones de modelos y parámetros: `docs/LLM.md`.
 3. **Filtro** (orden y descarte con razón):
    - *Validez semántica*: reglas Python (endpoint/params existen, tipos/enums válidos, método seguro, selector compatible con el esquema de respuesta, relación compatible con el tipo — p. ej. `subset` exige array) + chequeo LLM (`claude-haiku-5-5`) → score 0–1 + razón.
    - *Potencial de revelar fallos*: reglas (la transformación cambia algo, la relación no es tautológica, source ≠ followup) + chequeo LLM → score 0–1.
