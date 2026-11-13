@@ -5,6 +5,7 @@
     rq2          redundancy before/after the diversity filter (+ unique detections of redundant MRs)
     coverage     operations / parameters of the spec exercised by the MRs
     mutants      detection matrix on the demo API's fault variants (RQ3)
+    calibrate    compare verification models / thresholds on execution-labeled MRs (calls the real LLM)
 
 CSVs go to experiments/results/ (versioned); raw execution evidence to experiments/raw/ (git-ignored).
 """
@@ -77,8 +78,18 @@ def cmd_label_sheet(args: argparse.Namespace) -> None:
     print("Cada etiquetador llena su columna (label_a / label_b) con 1 = válida, 0 = inválida, sin ver la del otro.")
 
 
+def _warn_failed_checks(runs) -> None:
+    for run in runs:
+        failed = [w for w in run.report.get("warnings", []) if "chequeo" in w.lower()]
+        if failed:
+            print(f"OJO: {run.label} tuvo chequeos LLM fallidos (puntuados solo con reglas); repetir el run para RQ1:")
+            for w in failed:
+                print(f"  - {w}")
+
+
 def cmd_rq1(args: argparse.Namespace) -> None:
     runs = load_runs(args.runs)
+    _warn_failed_checks(runs)
     labeled = join_labels(runs, read_csv(args.labels))
     groups = [("all", labeled)]
     if len(runs) > 1:
@@ -217,6 +228,52 @@ async def cmd_mutants(args: argparse.Namespace) -> None:
     print(f"evidencia HTTP → {raw}")
 
 
+async def cmd_calibrate(args: argparse.Namespace) -> None:
+    from app.pipeline.context_extractor import extract_context
+    from app.pipeline.llm import LLMSettings, create_provider
+    from scripts._env import load_env
+
+    from mrexp import calibration as cal
+
+    load_env()
+    items: list[cal.CalibrationItem] = []
+    contexts = {}
+    for case_arg in args.case:
+        case, _, run_path = case_arg.partition("=")
+        preset = cal.PRESETS[case]
+        contexts[case] = extract_context(preset.spec.read_text(encoding="utf-8"))
+        case_items = cal.build_items(case, load_runs([Path(run_path)])[0], contexts[case])
+        async with preset.client() as client:
+            await cal.execute_items(case_items, client, concurrency=preset.max_concurrency)
+        labels = [i.label for i in case_items]
+        print(f"· {case}: " + ", ".join(f"{k}={labels.count(k)}" for k in ("valid", "invalid", "uncertain", "rules")))
+        items += case_items
+
+    configs = [cal.CheckConfig.parse(c) for c in args.config]
+    for config in configs:
+        provider = create_provider(LLMSettings(provider=args.provider, timeout_seconds=args.llm_timeout))
+        print(f"· chequeos con {config.name} …")
+        await cal.run_checks(items, contexts, provider, config, concurrency=args.llm_concurrency)
+
+    names = [c.name for c in configs]
+    summary = cal.summary_rows(items, names)
+    write_csv(_out(args, "calibration"), summary)
+    write_csv(_out(args, "calibration_items"), cal.item_rows(items, names))
+    args.raw_dir.mkdir(parents=True, exist_ok=True)
+    raw = args.raw_dir / f"{args.name}_calibration.json"
+    dump = [
+        {
+            **{k: getattr(i, k) for k in ("case", "id", "kind", "operator", "verdict", "rule_violations", "checks")},
+            "label": i.label,
+            "spec": i.spec.model_dump(mode="json"),
+        }
+        for i in items
+    ]
+    raw.write_text(json.dumps(dump, ensure_ascii=False, indent=1), encoding="utf-8")
+    _print_rows(summary, ["config", "valid", "invalid", "errors", "sem_auc", "sem_mean_valid", "sem_mean_invalid"])
+    print(f"→ {_out(args, 'calibration')}, {_out(args, 'calibration_items')}, {raw}")
+
+
 # ───────────────────────────── parser ─────────────────────────────
 
 
@@ -268,6 +325,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--timeout", type=float, default=10.0)
     p.add_argument("--concurrency", type=int, default=4)
     p.add_argument("--raw-dir", type=Path, default=RAW, help="where the HTTP evidence JSON goes (git-ignored)")
+
+    p = sub.add_parser("calibrate", parents=[common], help="verification model / threshold calibration (real LLM)")
+    p.add_argument("--case", action="append", required=True, help="preset=run.json, e.g. pokeapi=raw/smoke.json")
+    p.add_argument("--config", action="append", required=True, help="model:effort, e.g. gemini-4-hydrogen:low")
+    p.add_argument("--provider", choices=["gemini", "anthropic"], default="gemini")
+    p.add_argument("--llm-concurrency", type=int, default=4)
+    p.add_argument("--llm-timeout", type=float, default=120.0)
+    p.add_argument("--raw-dir", type=Path, default=RAW)
     return parser
 
 
@@ -284,6 +349,8 @@ def main(argv: list[str] | None = None) -> None:
             cmd_coverage(args)
         case "mutants":
             asyncio.run(cmd_mutants(args))
+        case "calibrate":
+            asyncio.run(cmd_calibrate(args))
 
 
 if __name__ == "__main__":

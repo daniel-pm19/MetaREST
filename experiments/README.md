@@ -44,6 +44,16 @@ python -m mrexp mutants --name demo \
 
 O con servidores ya levantados: `--variant original=http://localhost:8001 --variant ignore_limit=http://localhost:8002 ...`.
 
+Calibración de la verificación (llama al LLM real; usa los smoke runs, nunca los de RQ1):
+
+```bash
+python -m mrexp calibrate --name calib \
+  --case pokeapi=raw/smoke_pokeapi_gemini.json --case crossref=raw/smoke_crossref_gemini.json \
+  --config gemini-3.5-flash-lite:low:v1 --config gemini-3.5-flash-lite:medium:v2
+```
+
+`--config` es `modelo:esfuerzo:versión de prompt`. Resultados y decisión en `docs/LLM.md` (D15).
+
 ## Métricas y decisiones
 
 - **Hoja de etiquetado (RQ1)**: incluye todas las candidatas, **a ciegas** (sin decisión del filtro, scores ni

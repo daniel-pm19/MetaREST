@@ -20,6 +20,7 @@ from app.models.mr import (
 from app.pipeline.context_extractor import extract_context
 from app.pipeline.embeddings import HashingEmbedder
 from app.pipeline.executor import SUTClient
+
 from mrexp.__main__ import main
 from mrexp.io import NamedMR, RunData, load_manual_mrs, load_run, read_csv, select_candidates, write_csv
 from mrexp.metrics import (
@@ -359,3 +360,14 @@ def test_cli_metrics_commands(tmp_path, run):
     main(["coverage", str(SEARCH_SPEC), str(run_file), *common])
     groups = {r["group"] for r in read_csv(out / "t_coverage.csv")}
     assert groups == {"metarest_generated", "metarest_selected", "metarest_accepted"}
+
+
+def test_rq1_warns_about_runs_with_failed_checks(tmp_path, run, capsys):
+    run.report = {"warnings": ["3 chequeos LLM de la etapa semantic fallaron; se usaron solo las reglas"]}
+    run_file = write_run(tmp_path / "run.json", run)
+    data = json.loads(run_file.read_text())
+    data["report"] = run.report
+    run_file.write_text(json.dumps(data))
+    main(["label-sheet", str(run_file), "--name", "w", "--out-dir", str(tmp_path)])
+    main(["rq1", str(run_file), "--labels", str(tmp_path / "w_labels.csv"), "--name", "w", "--out-dir", str(tmp_path)])
+    assert "OJO: run tuvo chequeos LLM fallidos" in capsys.readouterr().out

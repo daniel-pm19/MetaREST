@@ -121,8 +121,8 @@ async def test_full_run_filters_and_executes(fake_sut):
     assert {r.model for r in llm.requests[1:]} == {"claude-haiku-5-5"}
     assert report.prompt_versions == {
         "generation": "gen_v1",
-        "semantic": "semcheck_v1",
-        "fault_revealing": "faultcheck_v1",
+        "semantic": "semcheck_v2",
+        "fault_revealing": "faultcheck_v2",
     }
     assert (report.verification_model, report.embedder) == ("claude-haiku-5-5", "hashing:256")
     assert report.stage(StageName.EXECUTE).detail == "pass: 4"
@@ -168,9 +168,9 @@ async def test_settings_and_prompt_overrides_are_used():
     settings = PipelineSettings(
         llm=LLMSettings(generation_model="claude-opus-5-5", verification_model="claude-sonnet-5-5", max_candidates=8),
     )
-    custom = PromptTemplate.from_strings("semcheck_v1", "CUSTOM SEMANTIC VALIDITY", "{{ mr }}")
+    custom = PromptTemplate.from_strings("semcheck_v2", "CUSTOM SEMANTIC VALIDITY", "{{ mr }}")
     llm = scripted_llm()
-    result = await run(llm, settings=settings, sut=False, prompts={"semcheck_v1": custom})
+    result = await run(llm, settings=settings, sut=False, prompts={"semcheck_v2": custom})
     assert result.report.ok
     assert (llm.requests[0].model, llm.requests[1].model) == ("claude-opus-5-5", "claude-sonnet-5-5")
     assert "8 metamorphic relations" in llm.requests[0].user

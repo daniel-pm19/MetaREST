@@ -18,6 +18,12 @@ DEFAULT_MODELS: dict[str, tuple[str, str]] = {
     "anthropic": ("claude-sonnet-5-5", "claude-haiku-5-5"),
     "gemini": ("gemini-4-hydrogen", "gemini-3.5-flash-lite"),
 }
+# Client-side request rate per model when not set explicitly. Gemini's free tier allows 15 requests/min on
+# Flash-Lite (measured 13-nov-2026); going over it makes checks fail.
+DEFAULT_RPM: dict[str, int] = {"gemini": 12}
+# Verification effort per provider when not set explicitly. Gemini Flash-Lite with "low" missed 2 of 13 invalid
+# MRs in the calibration; "medium" missed none (docs/LLM.md D15). Claude keeps "low" (D4, not calibrated).
+DEFAULT_VERIFICATION_EFFORT: dict[str, Effort] = {"gemini": "medium"}
 
 
 class LLMSettings(BaseModel):
@@ -32,6 +38,9 @@ class LLMSettings(BaseModel):
     enable_fallbacks: bool = Field(default=True, description="Server-side refusal fallbacks when supported.")
     timeout_seconds: float = Field(default=600.0, gt=0)
     max_retries: int = Field(default=2, ge=0, le=10)
+    requests_per_minute: int | None = Field(
+        default=None, ge=1, le=10000, description="Client-side limit per model; None = no limit."
+    )
 
     @model_validator(mode="after")
     def _provider_models(self) -> LLMSettings:
@@ -40,4 +49,8 @@ class LLMSettings(BaseModel):
             self.generation_model = generation
         if "verification_model" not in self.model_fields_set:
             self.verification_model = verification
+        if "verification_effort" not in self.model_fields_set:
+            self.verification_effort = DEFAULT_VERIFICATION_EFFORT.get(self.provider, self.verification_effort)
+        if "requests_per_minute" not in self.model_fields_set:
+            self.requests_per_minute = DEFAULT_RPM.get(self.provider)
         return self

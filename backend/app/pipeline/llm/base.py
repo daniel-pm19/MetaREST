@@ -63,9 +63,10 @@ class LLMResponse(BaseModel):
 class LLMProviderError(RuntimeError):
     """The provider could not produce a response (network, auth, rate limit after retries, ...)."""
 
-    def __init__(self, message: str, *, retriable: bool = False):
+    def __init__(self, message: str, *, retriable: bool = False, retry_after: float | None = None):
         super().__init__(message)
         self.retriable = retriable
+        self.retry_after = retry_after  # seconds the provider asked to wait, when it said so
 
 
 class LLMNotConfiguredError(LLMProviderError):

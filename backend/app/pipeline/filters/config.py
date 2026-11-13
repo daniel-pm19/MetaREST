@@ -18,8 +18,8 @@ class FilterSettings(BaseModel):
     # LLM checks (verification model from LLMSettings). Off = rules only (score 1.0 when rules pass).
     use_llm_checks: bool = True
     llm_concurrency: int = Field(default=4, ge=1, le=16)
-    semantic_prompt: str = "semcheck_v1"
-    fault_prompt: str = "faultcheck_v1"
+    semantic_prompt: str = "semcheck_v2"  # v2: exact relation semantics (calibration 13-nov, docs/LLM.md D15)
+    fault_prompt: str = "faultcheck_v2"
     # Local embedding model (fastembed / ONNX).
     embedding_model: str = "BAAI/bge-small-en-v1.5"
 

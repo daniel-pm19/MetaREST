@@ -150,6 +150,40 @@ async def test_sdk_errors_are_mapped(exc, retriable, text):
     assert info.value.retriable is retriable
 
 
+def quota_error(quota_id: str, delay: str) -> errors.ClientError:
+    return errors.ClientError(
+        429,
+        {
+            "error": {
+                "message": "quota",
+                "status": "RESOURCE_EXHAUSTED",
+                "details": [
+                    {
+                        "@type": "type.googleapis.com/google.rpc.QuotaFailure",
+                        "violations": [{"quotaId": quota_id, "quotaValue": "20"}],
+                    },
+                    {"@type": "type.googleapis.com/google.rpc.RetryInfo", "retryDelay": delay},
+                ],
+            }
+        },
+    )
+
+
+@pytest.mark.asyncio
+async def test_quota_per_minute_is_retriable_with_delay_and_per_day_is_not():
+    with pytest.raises(LLMProviderError) as info:
+        await provider(quota_error("GenerateRequestsPerMinutePerProjectPerModel-FreeTier", "20s"))[0].complete_json(
+            request()
+        )
+    assert info.value.retriable and info.value.retry_after == 20.0
+
+    with pytest.raises(LLMProviderError, match="cuota diaria agotada.*20 peticiones/día.*13 h") as info:
+        await provider(quota_error("GenerateRequestsPerDayPerProjectPerModel-FreeTier", "48122s"))[0].complete_json(
+            request()
+        )
+    assert not info.value.retriable
+
+
 @pytest.mark.asyncio
 async def test_missing_key_is_a_configuration_error(monkeypatch):
     for var in ("GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_GENAI_USE_ENTERPRISE", "GOOGLE_GENAI_USE_VERTEXAI"):
@@ -162,6 +196,8 @@ async def test_missing_key_is_a_configuration_error(monkeypatch):
 def test_settings_pick_provider_default_models():
     s = LLMSettings(provider="gemini")
     assert (s.generation_model, s.verification_model) == ("gemini-4-hydrogen", "gemini-3.5-flash-lite")
+    assert s.verification_effort == "medium" and LLMSettings().verification_effort == "low"
+    assert LLMSettings(provider="gemini", verification_effort="low").verification_effort == "low"
     custom = LLMSettings(provider="gemini", generation_model="gemini-4-argon")
     assert (custom.generation_model, custom.verification_model) == ("gemini-4-argon", "gemini-3.5-flash-lite")
     assert LLMSettings().generation_model == "claude-sonnet-5-5"

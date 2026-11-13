@@ -16,12 +16,13 @@ Responsable: Daniel. Todos los valores se pueden cambiar en `LLMSettings` (el Ad
 | `generation_effort` | `medium` | `low` · `medium` · `high` · `xhigh` · `max` |
 | `generation_max_tokens` | 32 000 | 1 024 – 128 000 |
 | `verification_model` | `claude-haiku-5-5` (Gemini: `gemini-3.5-flash-lite`) | cualquier id de modelo |
-| `verification_effort` | `low` | igual que arriba |
+| `verification_effort` | `low` (Gemini: `medium`, D15) | igual que arriba |
 | `verification_max_tokens` | 4 000 | 256 – 128 000 |
 | `max_candidates` | 20 | 1 – 50 |
 | `enable_fallbacks` | `true` | — |
 | `timeout_seconds` | 600 | > 0 |
 | `max_retries` | 2 | 0 – 10 |
+| `requests_per_minute` | sin límite (Gemini: 12) | 1 – 10 000 por modelo; `null` = sin límite (nivel de pago) |
 
 Filtros (`FilterSettings`, también editables por el Admin):
 
@@ -33,7 +34,7 @@ Filtros (`FilterSettings`, también editables por el Admin):
 | `similarity_threshold` | 0.975 | Coseno ≥ umbral: `redundant` (ver D12) |
 | `use_llm_checks` | `true` | `false` = solo reglas |
 | `llm_concurrency` | 4 | Chequeos LLM en paralelo |
-| `semantic_prompt` / `fault_prompt` | `semcheck_v1` / `faultcheck_v1` | |
+| `semantic_prompt` / `fault_prompt` | `semcheck_v2` / `faultcheck_v2` | v1 se conserva para trazabilidad (D15) |
 | `embedding_model` | `BAAI/bge-small-en-v1.5` | fastembed (ONNX), ~67 MB |
 
 ## 2. Decisiones
@@ -137,6 +138,8 @@ Filtros (`FilterSettings`, también editables por el Admin):
   el resultado de las reglas (score 1.0), `llm_reason` explica el fallo y el run registra un aviso.
 - **Por qué**: es preferible que el QA vea una MR más a perder un run entero por un error transitorio.
 - **Ojo para los experimentos**: un run con avisos de chequeos fallidos no es comparable para RQ1; hay que repetirlo.
+  `python -m mrexp rq1` lo avisa. Con el nivel gratuito de Gemini esto pasaba en masa por los 429 (13-nov): de ahí
+  el límite en el cliente de D15.
 
 ### D12. Diversidad con firma estructural y umbral 0.975
 
@@ -188,6 +191,37 @@ Filtros (`FilterSettings`, también editables por el Admin):
   el Admin elige Gemini en la configuración. En el paper se reporta Gemini; la procedencia de cada MR guarda
   proveedor y modelo. Revisar en los términos del nivel gratuito si Google usa los datos enviados (solo enviamos
   OpenAPI públicos y MRs, nunca respuestas de la SUT ni datos personales).
+
+### D15. Calibración de la verificación (13-nov-2026): Flash-Lite, esfuerzo `medium`, prompts v2
+
+- **Problema**: en los runs de prueba Flash-Lite daba `semantic = 1.0` a todas las MRs; el filtro no discriminaba.
+- **Método** (`python -m mrexp calibrate`, ver `experiments/README.md`): las MRs reales de los smoke runs de
+  PokeAPI y Crossref que pasan las reglas y dan `pass` contra la API real son **válidas** (17). A cada una se le
+  aplica un mutante plausible pero incorrecto (dirección invertida o relación cambiada, con el texto reescrito
+  para que coincida); los que pasan las reglas y dan `violation` contra la API real son **inválidos** (13). Las
+  etiquetas salen de la ejecución, no del LLM. El conjunto es de los smoke runs, no de los runs de RQ1.
+- **Resultados** (`experiments/results/calib_calibration.csv`):
+
+  | Verificación | AUC semántico | Válidas conservadas | Inválidas eliminadas | Tokens |
+  |---|---|---|---|---|
+  | Flash-Lite `low`, `semcheck_v1` | 0.85 | 17/17 | 9/13 | 119k |
+  | Flash-Lite `low`, `semcheck_v2` | 0.92 | 17/17 | 11/13 | 137k |
+  | **Flash-Lite `medium`, `semcheck_v2`** | **1.00** | **17/17** | **13/13** | 160k |
+
+  Las puntuaciones salen binarias (0 o 1), así que el umbral da igual entre 0.5 y 0.9: `min_semantic` se queda en
+  0.6. Hydrogen y 3.5 Flash también separaron bien en la primera corrida parcial, pero el nivel gratuito les da
+  20 peticiones/día: no alcanzan para verificar (≈ 40 chequeos por run).
+- **Causa de los fallos de v1**: el prompt de los chequeos solo nombraba las relaciones. Flash-Lite leía `disjoint`
+  como «las páginas entre sí» (el ejecutor exige que también la fuente sea disjunta) e ignoraba `direction`.
+  `semcheck_v2`/`faultcheck_v2` copian las definiciones exactas de `gen_v1` y piden juzgar el JSON, no el título.
+- **Límite de peticiones**: el nivel gratuito permite 15 peticiones/min en Flash-Lite, 20/día en Hydrogen y en
+  3.5 Flash (este además 5/min) y 0 en Argon y Carbon. `RateLimitedProvider` espacia las peticiones por modelo (`requests_per_minute`,
+  12 por defecto con Gemini) y reintenta un 429 por minuto tras el `retryDelay` que indica Google. Un 429 por día
+  falla de inmediato con «cuota diaria agotada… se reinicia en ~N h».
+- **Límites de la calibración**: 30 MRs, una sola corrida por configuración, y los mutantes pueden ser más fáciles
+  que los errores reales del generador. El criterio de potencial de fallo no se calibró: no hay etiquetas
+  objetivas, y las válidas puntúan 0.7–1.0, por encima de `min_fault_revealing` (0.5). RQ1 mide el filtro de
+  verdad sobre las candidatas etiquetadas a mano.
 
 ## 3. Pendiente de verificar con el API real
 
@@ -242,7 +276,9 @@ Con Claude sigue pendiente la prueba real (falta key).
 
 ## 5. Para los experimentos
 
-- Proveedor: **Gemini** (`gemini-4-hydrogen` + `gemini-3.5-flash-lite`), ver D14.
+- Proveedor: **Gemini** (`gemini-4-hydrogen` + `gemini-3.5-flash-lite` con esfuerzo `medium` y prompts v2), ver D14
+  y D15. Con el nivel gratuito, Hydrogen permite 20 peticiones/día: unos 15 runs por día como máximo (1 generación
+  por run más reintentos). No gastar esa cuota en pruebas el día de los experimentos.
 - Congelar `LLMSettings` y la versión del prompt antes del Hito M3 (mié 18) y no cambiarlos durante las corridas.
 - Reportar en el paper modelo de generación, modelo de verificación, `effort`, `max_candidates`, versión del prompt y
   cuántas respuestas usaron fallback.

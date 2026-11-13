@@ -27,11 +27,16 @@ from app.pipeline.orchestrator import PipelineSettings, run_pipeline
 from scripts._env import load_env
 
 
+def _rpm(args: argparse.Namespace) -> dict:
+    return {} if args.rpm is None else {"requests_per_minute": args.rpm or None}
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("spec", type=Path)
     parser.add_argument("-n", type=int, default=8, help="MRs to request (default 8)")
     parser.add_argument("--provider", choices=["anthropic", "gemini"], default="gemini")
+    parser.add_argument("--rpm", type=int, help="LLM requests/min per model (Gemini default 12; 0 = no limit)")
     parser.add_argument("--base-url", help="execute the surviving MRs against this SUT")
     parser.add_argument("--min-interval", type=float, default=0.0, help="seconds between SUT requests (Crossref: 1)")
     parser.add_argument("--max-concurrency", type=int, default=4, help="parallel SUT requests (Crossref: 1)")
@@ -45,7 +50,9 @@ async def main() -> None:
     if loaded:
         print(f"variables cargadas de backend/.env: {', '.join(loaded)}")
 
-    llm = LLMSettings(provider=args.provider, max_candidates=args.n, enable_fallbacks=not args.no_fallbacks)
+    llm = LLMSettings(
+        provider=args.provider, **_rpm(args), max_candidates=args.n, enable_fallbacks=not args.no_fallbacks
+    )
     print(f"proveedor: {llm.provider} · generación: {llm.generation_model} · verificación: {llm.verification_model}")
     filters = FilterSettings(use_llm_checks=not args.no_llm_checks)
     settings = PipelineSettings(llm=llm, filters=filters)

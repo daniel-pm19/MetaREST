@@ -104,3 +104,22 @@ def test_selector_is_required_on_the_wire_but_optional_in_the_contract():
 
     assert "source_selector" in generation_schema()["$defs"]["RelationSpec"]["required"]
     assert RelationSpec(type="equality").source_selector == "$"  # contract default unchanged
+
+
+@pytest.mark.parametrize("prompt_id", ["semcheck_v2", "faultcheck_v2"])
+def test_v2_checks_define_every_relation_exactly(prompt_id):
+    rendered = PromptTemplate.builtin(prompt_id).render(api_context="API", mr="MR")
+    assert "the source included" in rendered.system  # disjoint compares S too, not only the follow-ups
+    assert "the JSON wins" in rendered.system
+    for relation in (
+        "equality",
+        "equivalence",
+        "subset",
+        "disjoint",
+        "complete",
+        "difference",
+        "count_leq",
+        "same_order",
+    ):
+        assert f"`{relation}`" in rendered.system
+    assert "<api_spec>\nAPI\n</api_spec>" in rendered.user and "<mr>\nMR\n</mr>" in rendered.user

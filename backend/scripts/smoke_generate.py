@@ -25,11 +25,16 @@ from app.pipeline.llm import LLMSettings, create_provider
 from scripts._env import load_env
 
 
+def _rpm(args: argparse.Namespace) -> dict:
+    return {} if args.rpm is None else {"requests_per_minute": args.rpm or None}
+
+
 async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("spec", type=Path)
     parser.add_argument("-n", type=int, default=5, help="relations to request (default 5)")
     parser.add_argument("--provider", choices=["anthropic", "gemini"], default="gemini")
+    parser.add_argument("--rpm", type=int, help="LLM requests/min per model (Gemini default 12; 0 = no limit)")
     parser.add_argument("--model", help="generation model (default: the provider's default)")
     parser.add_argument("--effort", default=LLMSettings().generation_effort)
     parser.add_argument("--base-url", help="if given, execute the valid MRs against this SUT")
@@ -45,7 +50,7 @@ async def main() -> None:
 
     context = extract_context(args.spec.read_text(encoding="utf-8"))
     print(f"API: {context.title} — {len(context.operations)} operaciones GET/HEAD")
-    settings = LLMSettings(provider=args.provider, enable_fallbacks=not args.no_fallbacks)
+    settings = LLMSettings(provider=args.provider, **_rpm(args), enable_fallbacks=not args.no_fallbacks)
     provider = create_provider(settings)
     model = args.model or settings.generation_model
     result = await generate_relations(context, provider, model=model, n=args.n, effort=args.effort)

@@ -53,6 +53,23 @@ def to_gemini_schema(schema: dict[str, Any]) -> dict[str, Any]:
     return walk(copy.deepcopy(schema))
 
 
+def _quota(exc: errors.APIError) -> tuple[bool, str | None, float | None]:
+    """(per-day quota?, its limit, seconds to wait) from a 429's ``QuotaFailure`` / ``RetryInfo`` details."""
+    error = exc.details.get("error", {}) if isinstance(exc.details, dict) else {}
+    per_day, limit, retry = False, None, None
+    for detail in error.get("details", []) if isinstance(error, dict) else []:
+        for violation in detail.get("violations", []) or []:
+            if "PerDay" in str(violation.get("quotaId", "")):
+                per_day, limit = True, violation.get("quotaValue") or limit
+        delay = str(detail.get("retryDelay", ""))
+        if delay.endswith("s"):
+            try:
+                retry = float(delay[:-1])
+            except ValueError:
+                pass
+    return per_day, limit, retry
+
+
 def _name(value: Any) -> str | None:
     if value is None:
         return None
@@ -111,7 +128,13 @@ class GeminiProvider:
             if exc.code in (401, 403):
                 raise LLMProviderError(f"Gemini: credenciales inválidas ({exc.message})") from exc
             if exc.code == 429:
-                raise LLMProviderError("Gemini: límite de uso excedido", retriable=True) from exc
+                per_day, limit, retry = _quota(exc)
+                if per_day:
+                    hours = f"; se reinicia en ~{retry / 3600:.0f} h" if retry else ""
+                    raise LLMProviderError(
+                        f"Gemini: cuota diaria agotada para {request.model} ({limit or '?'} peticiones/día){hours}"
+                    ) from exc
+                raise LLMProviderError("Gemini: límite de uso excedido", retriable=True, retry_after=retry) from exc
             if exc.code == 404:
                 raise LLMProviderError(f"Gemini: el modelo {request.model!r} no existe o no está disponible") from exc
             raise LLMProviderError(f"Gemini: petición inválida ({exc.code}: {exc.message})") from exc
