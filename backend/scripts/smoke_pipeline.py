@@ -31,7 +31,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("spec", type=Path)
     parser.add_argument("-n", type=int, default=8, help="MRs to request (default 8)")
-    parser.add_argument("--provider", choices=["anthropic", "gemini"], default="anthropic")
+    parser.add_argument("--provider", choices=["anthropic", "gemini"], default="gemini")
     parser.add_argument("--base-url", help="execute the surviving MRs against this SUT")
     parser.add_argument("--min-interval", type=float, default=0.0, help="seconds between SUT requests (Crossref: 1)")
     parser.add_argument("--max-concurrency", type=int, default=4, help="parallel SUT requests (Crossref: 1)")

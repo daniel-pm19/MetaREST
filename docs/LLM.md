@@ -165,7 +165,7 @@ Filtros (`FilterSettings`, también editables por el Admin):
 - Los fallos esperados (spec inválida, proveedor caído, rechazo) no lanzan excepción: quedan en `report.error`
   y las etapas siguientes se marcan como `skipped`.
 - Las MRs descartadas no se ejecutan. Para RQ2 (¿alguna redundante detectaba un fallo que las elegidas no?),
-  `experiments/run_mutants.py` las ejecutará aparte.
+  `python -m mrexp mutants --select all` (en `experiments/`) las ejecuta aparte.
 
 ### D14. Proveedor Gemini como alternativa
 
@@ -183,7 +183,9 @@ Filtros (`FilterSettings`, también editables por el Admin):
 - **Corte y rechazo**: `finish_reason` `MAX_TOKENS` → truncado; `SAFETY`, `PROHIBITED_CONTENT`, `RECITATION`, etc.
   o un `block_reason` del prompt → rechazo. Los reintentos de 408/429/5xx los hace el SDK.
 - **Sin fallbacks del servidor**: `enable_fallbacks` solo aplica a Claude.
-- **Para el paper**: si los experimentos se corren con Gemini, se reporta así; la procedencia de cada MR guarda
+- **Proveedor de los experimentos: Gemini** (decidido por Daniel el 13-nov-2026: no hay key de Claude). Los
+  scripts de smoke usan `--provider gemini` por defecto. El default de la app (`LLMSettings`) sigue en Anthropic;
+  el Admin elige Gemini en la configuración. En el paper se reporta Gemini; la procedencia de cada MR guarda
   proveedor y modelo. Revisar en los términos del nivel gratuito si Google usa los datos enviados (solo enviamos
   OpenAPI públicos y MRs, nunca respuestas de la SUT ni datos personales).
 
@@ -212,7 +214,7 @@ cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with ht
   tests/fixtures/openapi_search.yaml -n 8
 ```
 
-Con Gemini: agregar `--with google-genai` y `--provider gemini`.
+Los scripts usan Gemini por defecto: agregar `--with google-genai` (y `--provider anthropic` para Claude).
 
 **Verificado con Gemini real (13-nov-2026, `gemini-4-hydrogen` + `gemini-3.5-flash-lite`)**: el API acepta el
 esquema y los `thinking_level` usados. Resultados de las pruebas (salidas en `experiments/raw/`, no versionadas):
@@ -240,6 +242,7 @@ Con Claude sigue pendiente la prueba real (falta key).
 
 ## 5. Para los experimentos
 
+- Proveedor: **Gemini** (`gemini-4-hydrogen` + `gemini-3.5-flash-lite`), ver D14.
 - Congelar `LLMSettings` y la versión del prompt antes del Hito M3 (mié 18) y no cambiarlos durante las corridas.
 - Reportar en el paper modelo de generación, modelo de verificación, `effort`, `max_candidates`, versión del prompt y
   cuántas respuestas usaron fallback.

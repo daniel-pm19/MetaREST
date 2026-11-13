@@ -29,7 +29,7 @@ async def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("spec", type=Path)
     parser.add_argument("-n", type=int, default=5, help="relations to request (default 5)")
-    parser.add_argument("--provider", choices=["anthropic", "gemini"], default="anthropic")
+    parser.add_argument("--provider", choices=["anthropic", "gemini"], default="gemini")
     parser.add_argument("--model", help="generation model (default: the provider's default)")
     parser.add_argument("--effort", default=LLMSettings().generation_effort)
     parser.add_argument("--base-url", help="if given, execute the valid MRs against this SUT")

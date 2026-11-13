@@ -42,6 +42,14 @@ cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with ht
   --with pyyaml --with jinja2 --with anthropic --with google-genai --with pytest --with pytest-asyncio python -m pytest -q
 ```
 
+Herramientas de experimentos (RQ1–RQ3, cobertura; ver `experiments/README.md`):
+
+```bash
+cd experiments && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with httpx --with jsonpath-ng \
+  --with pyyaml --with jinja2 --with anthropic --with google-genai --with pytest --with pytest-asyncio python -m pytest -q
+cd experiments && python -m mrexp --help   # mismas dependencias + fastembed para rq2
+```
+
 ## Contratos (no romper)
 
 - `backend/app/models/mr.py` y `docs/MR_SCHEMA.md` definen el modelo de MR ejecutable
