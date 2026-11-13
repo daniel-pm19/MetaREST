@@ -7,18 +7,16 @@ the orchestrator can store them as ``not_executable`` candidates (they count for
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from typing import Any
 
 from app.models.mr import MRSpec, parse_generated_relations
 from app.pipeline.context_extractor import ApiContext
 from app.pipeline.llm.base import Effort, LLMProvider, LLMRequest, LLMResponse, TokenUsage
-from app.pipeline.prompts import PromptTemplate
+from app.pipeline.prompts import PromptTemplate, neutralize_delimiters
 from app.pipeline.wire import from_wire, generation_schema
 
 DEFAULT_PROMPT = "gen_v1"
-_DELIMITER = re.compile(r"</?\s*api_spec\s*>", re.IGNORECASE)
 
 
 @dataclass
@@ -41,7 +39,7 @@ class GenerationResult:
 
 def _safe_context(context: ApiContext) -> str:
     """Render the spec and neutralize attempts to close the <api_spec> delimiter."""
-    return _DELIMITER.sub("[api_spec]", context.to_prompt_text())
+    return neutralize_delimiters(context.to_prompt_text())
 
 
 async def generate_relations(

@@ -9,6 +9,7 @@ The Administrator may later override a template's text from the database
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,15 @@ from jinja2 import Environment, StrictUndefined
 
 PROMPTS_DIR = Path(__file__).parent
 _ENV = Environment(undefined=StrictUndefined, autoescape=False, keep_trailing_newline=False)
+
+# Tags used to delimit untrusted data inside prompts.
+UNTRUSTED_TAGS = ("api_spec", "mr")
+_TAG = re.compile(r"</?\s*(" + "|".join(UNTRUSTED_TAGS) + r")\s*>", re.IGNORECASE)
+
+
+def neutralize_delimiters(text: str) -> str:
+    """Replace any <api_spec>/<mr> tag inside untrusted text, so it cannot close its delimiter."""
+    return _TAG.sub(lambda m: f"[{m.group(1).lower()}]", text)
 
 
 @dataclass(frozen=True)
