@@ -178,3 +178,31 @@ def test_settings_defaults():
     s = LLMSettings()
     assert (s.generation_model, s.verification_model) == ("claude-sonnet-5-5", "claude-haiku-5-5")
     assert s.max_candidates == 20
+
+
+@pytest.mark.asyncio
+async def test_missing_api_key_is_a_clear_configuration_error():
+    client = fake_client(message('{"ok": true}'))
+    client.api_key, client.auth_token = None, None
+    with pytest.raises(LLMNotConfiguredError, match="falta ANTHROPIC_API_KEY"):
+        await AnthropicProvider(client).complete_json(request())
+    assert client.beta.messages.calls == []  # nothing was sent
+
+
+@pytest.mark.asyncio
+async def test_pipeline_reports_missing_key_without_crashing(monkeypatch):
+    from app.pipeline.orchestrator import StageName, StageStatus, run_pipeline
+    from tests.conftest import FIXTURES
+
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_AUTH_TOKEN", raising=False)
+    result = await run_pipeline(
+        (FIXTURES / "openapi_search.yaml").read_text(encoding="utf-8"),
+        project_id="p",
+        run_id="r",
+        provider=create_provider(LLMSettings()),
+        embedder=None,
+        sut=None,
+    )
+    assert result.report.error == "Anthropic: falta ANTHROPIC_API_KEY (agrégala en backend/.env)"
+    assert result.report.stage(StageName.GENERATE).status is StageStatus.FAILED

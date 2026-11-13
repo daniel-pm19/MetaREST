@@ -3,7 +3,7 @@
 Generates MRs for an OpenAPI spec and, optionally, executes them against a SUT.
 
     cd backend
-    # ANTHROPIC_API_KEY must be set (e.g. exported from backend/.env)
+    # reads ANTHROPIC_API_KEY from backend/.env (or from the shell)
     python -m scripts.smoke_generate tests/fixtures/openapi_search.yaml -n 5
     python -m scripts.smoke_generate path/to/spec.yaml -n 5 --base-url http://localhost:8001
 
@@ -22,6 +22,7 @@ from app.pipeline.context_extractor import extract_context
 from app.pipeline.executor import SUTClient, execute_many
 from app.pipeline.generator import generate_relations
 from app.pipeline.llm import LLMSettings, create_provider
+from scripts._env import load_env
 
 
 async def main() -> None:
@@ -34,6 +35,9 @@ async def main() -> None:
     parser.add_argument("--no-fallbacks", action="store_true", help="disable server-side refusal fallbacks")
     parser.add_argument("--out", type=Path, default=Path("../experiments/raw/smoke_result.json"))
     args = parser.parse_args()
+    loaded = load_env()
+    if loaded:
+        print(f"variables cargadas de backend/.env: {', '.join(loaded)}")
 
     context = extract_context(args.spec.read_text(encoding="utf-8"))
     print(f"API: {context.title} — {len(context.operations)} operaciones GET/HEAD")

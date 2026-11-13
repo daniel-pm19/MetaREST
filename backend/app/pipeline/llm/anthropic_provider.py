@@ -19,7 +19,7 @@ from typing import Any
 
 import anthropic
 
-from app.pipeline.llm.base import LLMProviderError, LLMRequest, LLMResponse, TokenUsage
+from app.pipeline.llm.base import LLMNotConfiguredError, LLMProviderError, LLMRequest, LLMResponse, TokenUsage
 
 FALLBACK_BETA = "server-side-fallback-2026-07-01"
 # Models that accept server-side refusal fallbacks (Claude Haiku 5.5 has none).
@@ -58,7 +58,16 @@ class AnthropicProvider:
             params["fallbacks"] = "default"
         return params, use_fallbacks
 
+    def _check_credentials(self) -> None:
+        # Without this the SDK fails with a TypeError deep inside the request builder.
+        missing = object()
+        api_key = getattr(self._client, "api_key", missing)
+        auth_token = getattr(self._client, "auth_token", missing)
+        if api_key is None and auth_token is None:
+            raise LLMNotConfiguredError("Anthropic: falta ANTHROPIC_API_KEY (agrégala en backend/.env)")
+
     async def complete_json(self, request: LLMRequest) -> LLMResponse:
+        self._check_credentials()
         params, use_beta = self.build_params(request)
         messages = self._client.beta.messages if use_beta else self._client.messages
         try:

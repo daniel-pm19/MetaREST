@@ -24,6 +24,7 @@ from app.pipeline.executor import SUTClient
 from app.pipeline.filters import FilterSettings
 from app.pipeline.llm import LLMSettings, create_provider
 from app.pipeline.orchestrator import PipelineSettings, run_pipeline
+from scripts._env import load_env
 
 
 async def main() -> None:
@@ -36,6 +37,9 @@ async def main() -> None:
     parser.add_argument("--cache-dir", default="../.fastembed_cache", help="where the embedding model is stored")
     parser.add_argument("--out", type=Path, default=Path("../experiments/raw/smoke_pipeline.json"))
     args = parser.parse_args()
+    loaded = load_env()
+    if loaded:
+        print(f"variables cargadas de backend/.env: {', '.join(loaded)}")
 
     llm = LLMSettings(max_candidates=args.n, enable_fallbacks=not args.no_fallbacks)
     filters = FilterSettings(use_llm_checks=not args.no_llm_checks)
