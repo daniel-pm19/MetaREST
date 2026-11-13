@@ -169,6 +169,10 @@ Filtros (`FilterSettings`, también editables por el Admin):
 
 ## 3. Pendiente de verificar con el API real
 
+Antes: copiar `backend/.env.example` a `backend/.env` y poner la key de la Claude Console (la suscripción Claude
+Pro no incluye acceso al API). Los scripts `smoke_*` leen ese archivo solos. Sin key, el run termina con
+`Anthropic: falta ANTHROPIC_API_KEY` en vez de fallar con un error interno.
+
 Los tests usan `FakeLLMProvider` y un cliente SDK falso; no llaman a Claude. Falta comprobar con una llamada real:
 
 1. Que el API acepta el esquema adaptado por `wire.py` (`anyOf`, `const`, `$ref`).

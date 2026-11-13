@@ -42,9 +42,6 @@ cd backend && uv run --no-project --python 3.12 --with 'pydantic>=2.9' --with ht
   --with pyyaml --with jinja2 --with anthropic --with pytest --with pytest-asyncio python -m pytest -q
 ```
 
-La API key de Anthropic va en `backend/.env` como `ANTHROPIC_API_KEY` (el SDK la lee sola). Los tests
-nunca la usan: corren con `FakeLLMProvider`.
-
 ## Contratos (no romper)
 
 - `backend/app/models/mr.py` y `docs/MR_SCHEMA.md` definen el modelo de MR ejecutable
