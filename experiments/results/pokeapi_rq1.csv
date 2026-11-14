@@ -1,0 +1,2 @@
+group,candidates,labeled,disagreements_unresolved,unlabeled,kappa,raw_agreement,n_pre,valid_pre,valid_rate_pre,n_post,valid_post,valid_rate_post,kept_valid,kept_invalid,discarded_valid,discarded_invalid,filter_precision,filter_recall_valid,invalid_removed_rate,valid_rate_pre_a,valid_rate_post_a,valid_rate_pre_b,valid_rate_post_b
+all,20,20,0,0,1.0,1.0,20,20,1.0,16,16,1.0,16,0,4,0,1.0,0.8,,1.0,1.0,1.0,1.0

@@ -77,7 +77,8 @@ Si la API real falla una MR correcta, la MR **sigue siendo válida** (eso es jus
 - Respuesta: `{status, message: {total-results, items: [...]}}`. Paginación con `rows` y `offset`.
 - **Los datos cambian** (se registran DOIs constantemente). Comparar totales o listas entre peticiones hechas con
   segundos de diferencia suele funcionar, pero una relación que exige igualdad exacta sobre resultados **sin orden
-  definido** (sin `sort`) no está garantizada. Con `sort=created&order=asc` el orden es estable.
+  definido** (sin `sort`) no está garantizada. `sort=created&order=asc` ordena por fecha de creación, pero el spec
+  no dice cómo desempata obras con la misma fecha: que el orden sea estable entre peticiones es **zona gris**.
 - **Filtros por endpoint**: cada operación lista en su descripción los filtros que soporta. `/members` solo
   `backfile-doi-count`, `current-doi-count` y `prefix`; `/funders` solo `location`; `/works` tiene muchos más.
   Un filtro de `/works` usado en otro endpoint no es válido.

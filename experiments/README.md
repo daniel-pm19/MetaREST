@@ -127,8 +127,20 @@ Runs de experimento hechos con `config/experiment.json` (commit `7bf7693` del pi
 - Salidas: `results/{pokeapi,crossref}_labels.csv` (hojas de RQ1, solo `run1`: 20 MRs cada una, para que el
   etiquetado quepa en el tiempo), `*_rq2*.csv` y `*_coverage*.csv` (los dos runs).
 
+RQ1 (`run1` de cada API, 2 etiquetadores, desacuerdos resueltos en `label_final`):
+
+| API | Acuerdo | Kappa | Válidas antes del filtro | Válidas después | Válidas descartadas | Inválidas descartadas |
+|---|---|---|---|---|---|---|
+| PokeAPI | 20/20 | 1.00 (degenerada: nadie usó `0`) | 20/20 (100 %) | 16/16 (100 %) | 4 (1 semántica, 2 potencial de fallo, 1 redundante) | — |
+| Crossref | 14/20 | 0.35 | 17/20 (85 %) | 14/17 (82 %) | 3 (redundantes) | 0 de 3 |
+
+- El filtro **no subió** la proporción de válidas: en PokeAPI no había inválidas, y en Crossref las 3 inválidas pasaron.
+  Los 6 desacuerdos de Crossref eran todos sobre si `sort=created` da un orden estable (la guía lo afirmaba al
+  principio y se corrigió a zona gris); se resolvieron con la etiqueta de A.
+- Las descartadas por potencial de fallo o redundancia no son errores de validez (miden otra cosa).
+
 Pendiente:
-1. **Etiquetar** siguiendo [`LABELING.md`](LABELING.md): A en `results/<api>_labels.csv`, B en su copia
+1. ~~Etiquetar~~ (hecho para `run1`). Para repetirlo, seguir [`LABELING.md`](LABELING.md): A en `results/<api>_labels.csv`, B en su copia
    `results/<api>_labels_b.csv`, sin ver la del otro. Después `merge-labels`, resolver desacuerdos en `label_final`
    y correr `rq1` por API: `python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi`.
 2. Revisar las MRs en la UI (o marcar `status` aceptadas) para `--select accepted`.
