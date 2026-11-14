@@ -53,6 +53,7 @@ Métricas:
 
 ```bash
 python -m mrexp label-sheet raw/pokeapi_run1.json --name pokeapi
+python -m mrexp merge-labels results/pokeapi_labels.csv results/pokeapi_labels_b.csv
 python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi
 python -m mrexp rq2 raw/pokeapi_run1.json --threshold 0.95 --threshold 0.975 --name pokeapi
 python -m mrexp coverage specs/pokeapi.yaml raw/pokeapi_run1.json --manual manual_mrs/pokeapi --name pokeapi
@@ -123,12 +124,13 @@ Runs de experimento hechos con `config/experiment.json` (commit `7bf7693` del pi
   OpenAPI los documenta. Es una discrepancia real entre spec e implementación, buen ejemplo para el paper.
 - `crossref_run1`, error: la MR agrega `filter=has-public-references:true` a `/members`, filtro que solo existe en
   `/works` (400). MR inválida que el filtro no detectó; queda para RQ1.
-- Salidas: `results/{pokeapi,crossref}_labels.csv` (hojas de RQ1, 40 candidatas cada una), `*_rq2*.csv`,
-  `*_coverage*.csv`.
+- Salidas: `results/{pokeapi,crossref}_labels.csv` (hojas de RQ1, solo `run1`: 20 MRs cada una, para que el
+  etiquetado quepa en el tiempo), `*_rq2*.csv` y `*_coverage*.csv` (los dos runs).
 
 Pendiente:
-1. **Etiquetar** (2 personas, cada una en su columna sin ver la otra), resolver desacuerdos en `label_final` y correr
-   `rq1` por API: `python -m mrexp rq1 raw/pokeapi_run1.json raw/pokeapi_run2.json --labels results/pokeapi_labels.csv --name pokeapi`.
+1. **Etiquetar** siguiendo [`LABELING.md`](LABELING.md): A en `results/<api>_labels.csv`, B en su copia
+   `results/<api>_labels_b.csv`, sin ver la del otro. Después `merge-labels`, resolver desacuerdos en `label_final`
+   y correr `rq1` por API: `python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi`.
 2. Revisar las MRs en la UI (o marcar `status` aceptadas) para `--select accepted`.
 3. RQ3 cuando existan `sut-demo`, su suite tradicional y las MRs manuales: `run demo` y luego `mutants`
    (y `mutants --select all --name demo_all` + `rq2 --detections` para la pregunta de redundantes).
