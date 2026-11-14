@@ -108,6 +108,27 @@ def parse_label(value: str | None, where: str = "") -> bool | None:
     raise ValueError(f"{where}: etiqueta no reconocida {value!r} (usa 1/0, sí/no)")
 
 
+def merge_labels(base: Sequence[dict[str, str]], other: Sequence[dict[str, str]], column: str) -> list[dict[str, str]]:
+    """Copy ``column`` (and the notes) of another labeler's copy of the sheet into ``base``, matched by key.
+
+    Each labeler fills their own copy; this joins them once both are done. Every row of ``base`` must be labeled in
+    ``other``, and a value already in ``base`` is never overwritten with a different one.
+    """
+    by_key = {row["key"]: row for row in other}
+    merged = []
+    for row in base:
+        k = row["key"]
+        theirs = by_key.get(k)
+        if theirs is None or parse_label(theirs.get(column), f"{k} {column}") is None:
+            raise ValueError(f"{k}: falta {column} en la copia del otro etiquetador")
+        mine = (row.get(column) or "").strip()
+        if mine and parse_label(mine, k) != parse_label(theirs[column], k):
+            raise ValueError(f"{k}: {column} ya tiene otro valor en la hoja base")
+        notes = " | ".join(n for n in ((row.get("notes") or "").strip(), (theirs.get("notes") or "").strip()) if n)
+        merged.append({**row, column: theirs[column].strip(), "notes": notes})
+    return merged
+
+
 def cohen_kappa(pairs: Sequence[tuple[bool, bool]]) -> float | None:
     """Cohen's kappa for two raters and a binary label. None without pairs."""
     n = len(pairs)

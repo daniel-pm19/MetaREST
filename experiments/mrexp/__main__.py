@@ -2,6 +2,7 @@
 
     run          one MetaREST run with the frozen settings of config/experiment.json (calls the real LLM)
     label-sheet  blind CSV of every candidate for manual validity labeling (RQ1)
+    merge-labels join the second labeler's copy of the sheet into the first one (RQ1)
     rq1          validity before/after the filter + Cohen's kappa, from the filled sheet
     rq2          redundancy before/after the diversity filter (+ unique detections of redundant MRs)
     coverage     operations / parameters of the spec exercised by the MRs
@@ -26,6 +27,8 @@ from mrexp.metrics import (
     coverage_rows,
     join_labels,
     label_sheet_rows,
+    merge_labels,
+    parse_label,
     redundant_unique_detection_rows,
     rq1_by_stage_rows,
     rq1_rows,
@@ -137,6 +140,23 @@ async def cmd_run(args: argparse.Namespace) -> None:
         print("OJO: backend/app o experiments/config tienen cambios sin commit; el run no es reproducible por commit")
     runs.write_export(payload, out)
     print(f"→ {out}")
+
+
+def cmd_merge_labels(args: argparse.Namespace) -> None:
+    base = read_csv(args.sheet)
+    try:
+        rows = merge_labels(base, read_csv(args.other), args.column)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+    path = write_csv(args.out or args.sheet, rows, list(base[0].keys()) if base else SHEET_COLUMNS)
+    pairs = [(parse_label(r["label_a"]), parse_label(r["label_b"])) for r in rows]
+    both = [(a, b) for a, b in pairs if a is not None and b is not None]
+    disagree = [r for r, (a, b) in zip(rows, pairs, strict=True) if a is not None and b is not None and a != b]
+    print(f"{len(rows)} filas · con las dos etiquetas: {len(both)} · desacuerdos: {len(disagree)} → {path}")
+    for r in disagree:
+        print(f"  {r['key']}  {r['title'][:90]}")
+    if disagree:
+        print("Discutan esas filas y escriban el valor acordado en label_final; después, rq1.")
 
 
 def cmd_label_sheet(args: argparse.Namespace) -> None:
@@ -369,6 +389,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--seed", type=int, default=13)
     p.add_argument("--out", type=Path)
 
+    p = sub.add_parser("merge-labels", help="copy the other labeler's column into the sheet (RQ1)")
+    p.add_argument("sheet", type=Path, help="sheet with your column filled (e.g. results/pokeapi_labels.csv)")
+    p.add_argument("other", type=Path, help="the other labeler's copy (e.g. results/pokeapi_labels_b.csv)")
+    p.add_argument("--column", choices=["label_a", "label_b"], default="label_b", help="column to copy (default b)")
+    p.add_argument("--out", type=Path, help="default: overwrite the sheet")
+
     p = sub.add_parser("rq1", parents=[common], help="validity pre/post filter + kappa")
     p.add_argument("runs", nargs="+", type=Path)
     p.add_argument("--labels", type=Path, required=True, help="the filled label sheet")
@@ -423,6 +449,8 @@ def main(argv: list[str] | None = None) -> None:
             asyncio.run(cmd_run(args))
         case "label-sheet":
             cmd_label_sheet(args)
+        case "merge-labels":
+            cmd_merge_labels(args)
         case "rq1":
             cmd_rq1(args)
         case "rq2":
