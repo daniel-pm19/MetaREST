@@ -371,3 +371,28 @@ def test_rq1_warns_about_runs_with_failed_checks(tmp_path, run, capsys):
     main(["label-sheet", str(run_file), "--name", "w", "--out-dir", str(tmp_path)])
     main(["rq1", str(run_file), "--labels", str(tmp_path / "w_labels.csv"), "--name", "w", "--out-dir", str(tmp_path)])
     assert "OJO: run tuvo chequeos LLM fallidos" in capsys.readouterr().out
+
+
+def test_merge_labels_joins_the_other_copy(tmp_path):
+    from mrexp.metrics import merge_labels
+
+    base = [
+        {"key": "r/1", "title": "uno", "label_a": "1", "label_b": "", "label_final": "", "notes": "A: ok"},
+        {"key": "r/2", "title": "dos", "label_a": "0", "label_b": "", "label_final": "", "notes": ""},
+    ]
+    other = [
+        {"key": "r/2", "title": "dos", "label_a": "", "label_b": "1", "label_final": "", "notes": "B: depende"},
+        {"key": "r/1", "title": "uno", "label_a": "", "label_b": "1", "label_final": "", "notes": ""},
+    ]
+    merged = merge_labels(base, other, "label_b")
+    assert [(r["label_a"], r["label_b"], r["notes"]) for r in merged] == [("1", "1", "A: ok"), ("0", "1", "B: depende")]
+    with pytest.raises(ValueError, match="falta label_b"):
+        merge_labels(base, other[:1], "label_b")
+    with pytest.raises(ValueError, match="otro valor"):
+        merge_labels([{**base[0], "label_b": "0"}], other, "label_b")
+
+    sheet, copy = tmp_path / "s.csv", tmp_path / "b.csv"
+    write_csv(sheet, base)
+    write_csv(copy, other)
+    main(["merge-labels", str(sheet), str(copy)])
+    assert [r["label_b"] for r in read_csv(sheet)] == ["1", "1"]
