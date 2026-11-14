@@ -13,7 +13,7 @@ API bajo prueba (SUT) y las presenta a un QA Auditor. Plan completo: `docs/PLAN.
 | `sut-demo/` | API demo con fallos inyectables (`FAULTS=...`) | Nestor |
 | `experiments/` | Baselines, MRs manuales, runner de mutantes, resultados | Daniel / Isaac / Nestor |
 | `infra/` | Docker Compose (dev/prod), Nginx, scripts de backup/bootstrap | Nestor |
-| `docs/` | `PLAN.md`, `API.md`, `MR_SCHEMA.md`, `LLM.md`, `SUTS.md` | Todos |
+| `docs/` | `PLAN.md`, `API.md`, `MR_SCHEMA.md`, `LLM.md`, `SUTS.md`, `INTEGRATION.md` | Todos |
 
 Trabaja solo dentro de la carpeta de tu tarea; si necesitas tocar otra, coordínalo antes.
 

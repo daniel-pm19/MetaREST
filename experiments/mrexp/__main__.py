@@ -1,5 +1,6 @@
 """MetaREST experiments CLI.  Run from ``experiments/``:  ``python -m mrexp <command> --help``.
 
+    run          one MetaREST run with the frozen settings of config/experiment.json (calls the real LLM)
     label-sheet  blind CSV of every candidate for manual validity labeling (RQ1)
     rq1          validity before/after the filter + Cohen's kappa, from the filled sheet
     rq2          redundancy before/after the diversity filter (+ unique detections of redundant MRs)
@@ -69,6 +70,73 @@ def _fmt(value: Any) -> str:
 
 
 # ───────────────────────────── commands ─────────────────────────────
+
+
+async def cmd_run(args: argparse.Namespace) -> None:
+    from app.pipeline.embeddings import FastEmbedEmbedder
+    from app.pipeline.llm import create_provider
+    from scripts._env import load_env
+
+    from mrexp import runs
+    from mrexp.suts import PRESETS, SUTPreset
+
+    if args.name == "exp":
+        raise SystemExit("usa --name <api>_run<n> (p. ej. --name pokeapi_run1): es el id del run en las tablas")
+    if args.sut in PRESETS:
+        preset = PRESETS[args.sut]
+    elif args.spec and args.base_url:
+        preset = SUTPreset(args.spec, args.base_url, args.max_concurrency, args.min_interval, args.timeout)
+    else:
+        raise SystemExit(f"SUT desconocida {args.sut!r}: usa {', '.join(PRESETS)} o pasa --spec y --base-url")
+    out = args.raw_dir / f"{args.name}.json"
+    if out.exists() and not args.force:
+        raise SystemExit(f"{out} ya existe (es un run de experimento: no se sobrescribe sin --force)")
+
+    loaded = load_env()
+    if loaded:
+        print(f"variables cargadas de backend/.env: {', '.join(loaded)}")
+    settings = runs.load_settings(args.config)
+    llm, filters = settings.llm, settings.filters
+    print(f"· {args.name}: {args.sut} ({preset.base_url}) · {args.config.name}")
+    print(
+        f"  generación {llm.generation_model} ({llm.generation_effort}) · verificación {llm.verification_model} "
+        f"({llm.verification_effort}) · {llm.max_candidates} MRs · prompts {settings.generation_prompt}, "
+        f"{filters.semantic_prompt}, {filters.fault_prompt}"
+    )
+
+    async def show(report) -> None:
+        running = [s.name.value for s in report.stages if s.status.value == "running"]
+        if running:
+            print(f"  … {running[0]}", flush=True)
+
+    result, payload = await runs.execute_run(
+        args.name,
+        args.sut,
+        preset,
+        settings,
+        create_provider(llm),
+        FastEmbedEmbedder(filters.embedding_model, cache_dir=str(args.cache_dir)),
+        config_path=args.config,
+        on_progress=show,
+    )
+    for st in result.report.stages:
+        print(
+            f"  {st.name.value:<16} {st.status.value:<8} {st.input_count or 0:>3} → {st.output_count or 0:>3}  "
+            f"{(st.duration_ms or 0) / 1000:>6.1f} s {st.usage.total:>7} tok  {st.detail or ''}"
+        )
+    print(f"  conteos: {result.counts} · tokens: {result.report.usage.total}")
+    problems = payload["meta"]["problems"]
+    if problems:
+        failed = out.with_suffix(".failed.json")
+        runs.write_export(payload, failed)
+        print("NO USAR para los experimentos (repite el run):")
+        for p in problems:
+            print(f"  - {p}")
+        raise SystemExit(f"→ {failed}")
+    if payload["meta"]["git"]["pipeline_dirty"]:
+        print("OJO: backend/app o experiments/config tienen cambios sin commit; el run no es reproducible por commit")
+    runs.write_export(payload, out)
+    print(f"→ {out}")
 
 
 def cmd_label_sheet(args: argparse.Namespace) -> None:
@@ -284,6 +352,18 @@ def build_parser() -> argparse.ArgumentParser:
     common.add_argument("--out-dir", type=Path, default=RESULTS)
     sub = parser.add_subparsers(dest="command", required=True)
 
+    p = sub.add_parser("run", parents=[common], help="one MetaREST run with the frozen settings (real LLM)")
+    p.add_argument("sut", help="pokeapi | crossref | any name with --spec and --base-url (e.g. demo)")
+    p.add_argument("--config", type=Path, default=ROOT / "config" / "experiment.json")
+    p.add_argument("--spec", type=Path, help="OpenAPI file (SUTs without preset)")
+    p.add_argument("--base-url")
+    p.add_argument("--max-concurrency", type=int, default=4)
+    p.add_argument("--min-interval", type=float, default=0.0)
+    p.add_argument("--timeout", type=float, default=10.0)
+    p.add_argument("--cache-dir", type=Path, default=ROOT.parent / ".fastembed_cache")
+    p.add_argument("--raw-dir", type=Path, default=RAW)
+    p.add_argument("--force", action="store_true", help="overwrite an existing run export")
+
     p = sub.add_parser("label-sheet", parents=[common], help="blind labeling sheet (RQ1)")
     p.add_argument("runs", nargs="+", type=Path, help="run exports (JSON with settings/report/candidates)")
     p.add_argument("--seed", type=int, default=13)
@@ -339,6 +419,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     match args.command:
+        case "run":
+            asyncio.run(cmd_run(args))
         case "label-sheet":
             cmd_label_sheet(args)
         case "rq1":

@@ -3,7 +3,8 @@
 | Carpeta | Contenido | Versionado |
 |---|---|---|
 | `specs/` | OpenAPI curados de PokeAPI y Crossref ([README](specs/README.md)) | sí |
-| `mrexp/` | Herramientas: hoja de etiquetado, RQ1, RQ2, cobertura y runner de mutantes (RQ3) | sí |
+| `config/experiment.json` | Configuración **congelada** del pipeline para todos los runs de experimento | sí |
+| `mrexp/` | Herramientas: runs, hoja de etiquetado, RQ1, RQ2, cobertura, runner de mutantes (RQ3) y calibración | sí |
 | `manual_mrs/<api>/` | MRs manuales de la línea base (Isaac), un `.json` por MR con el esquema `MRSpec` | sí |
 | `results/` | CSVs para el paper (`<nombre>_<métrica>.csv`) | sí |
 | `raw/` | Exportes de runs y evidencia HTTP del runner | no (`.gitignore`) |
@@ -11,9 +12,17 @@
 
 Proveedor LLM de los experimentos: **Gemini** (`docs/LLM.md`, D14).
 
+## Configuración congelada
+
+`config/experiment.json` es un `PipelineSettings` completo (todos los campos escritos, así un cambio de los valores
+por defecto del código no altera los experimentos): generación `gemini-4-hydrogen` (esfuerzo `medium`), verificación
+`gemini-3.5-flash-lite` (esfuerzo `medium`, D15), 20 MRs por run, prompts `gen_v1` / `semcheck_v2` /
+`faultcheck_v2`, umbrales `min_semantic` 0.6, `min_fault_revealing` 0.5, similitud 0.975. **No se edita** durante los
+experimentos; si hubiera que cambiarlo, se repiten todos los runs.
+
 ## Entradas
 
-- **Exporte de un run**: JSON `{"settings", "report", "candidates"}` con **todas** las candidatas, incluidas las
+- **Exporte de un run**: JSON `{"meta", "settings", "report", "candidates"}` (`meta` es opcional) con **todas** las candidatas, incluidas las
   descartadas. Lo escriben `backend/scripts/smoke_pipeline.py --out ...` y, cuando exista, el export del backend
   (`GET /candidates/export`). También se acepta una lista de candidatas sola.
 - **MRs manuales**: `manual_mrs/<api>/*.json`, cada archivo con un `MRSpec` (o una lista). Mismo esquema que el
@@ -24,7 +33,23 @@ Proveedor LLM de los experimentos: **Gemini** (`docs/LLM.md`, D14).
 
 ## Comandos
 
-Desde `experiments/`, con las dependencias del backend (ver `AGENTS.md`; `rq2` además `--with fastembed`):
+Desde `experiments/`, con las dependencias del backend (ver `AGENTS.md`; `run` y `rq2` además `--with fastembed`).
+
+Runs de MetaREST con la configuración congelada (llaman al LLM real; la key va en `backend/.env`):
+
+```bash
+python -m mrexp run pokeapi --name pokeapi_run1
+python -m mrexp run crossref --name crossref_run1
+python -m mrexp run demo --name demo_run1 --spec ../sut-demo/openapi.json --base-url http://localhost:8001
+```
+
+Escribe `raw/<name>.json` con todas las candidatas y un bloque `meta` (commit, sha256 del spec y de la config,
+límites del cliente HTTP). Nunca sobrescribe un run existente (`--force` para hacerlo). Si el run terminó con error o
+algún chequeo LLM falló (se habría puntuado solo con reglas, D11), lo guarda como `raw/<name>.failed.json` y hay que
+repetirlo: ese run no sirve para RQ1. Los runs de experimento quedan en `raw/` (no versionado); guárdalos también fuera
+del repo, porque las tablas del paper salen de ellos.
+
+Métricas:
 
 ```bash
 python -m mrexp label-sheet raw/pokeapi_run1.json --name pokeapi
@@ -81,3 +106,30 @@ python -m mrexp calibrate --name calib \
 
 `python -m pytest -q` (ver `AGENTS.md`). Usan un catálogo falso en `tests/fixtures/demo_sut.py` (solo stdlib, no es
 la API demo real) y una suite tradicional de ejemplo; el test de punta a punta levanta un servidor por variante.
+
+## Estado (13-nov-2026)
+
+Runs de experimento hechos con `config/experiment.json` (commit `7bf7693` del pipeline), los 4 utilizables
+(sin errores ni chequeos LLM fallidos):
+
+| Run | Generadas | Semántica | Potencial de fallo | Redundantes | Pasan el filtro | Ejecución | Tokens |
+|---|---|---|---|---|---|---|---|
+| `pokeapi_run1` | 20 | −1 | −2 | −1 | 16 | 16 pass | 95k |
+| `pokeapi_run2` | 20 | 0 | −2 | 0 | 18 | 18 pass | 100k |
+| `crossref_run1` | 20 | 0 | 0 | −3 | 17 | 15 pass, 1 violation, 1 error | 154k |
+| `crossref_run2` | 20 | −1 | 0 | −6 | 13 | 13 pass | 151k |
+
+- `crossref_run1`, violación: `GET /types` **ignora `rows` y `offset`** (siempre devuelve los 30 tipos) aunque el
+  OpenAPI los documenta. Es una discrepancia real entre spec e implementación, buen ejemplo para el paper.
+- `crossref_run1`, error: la MR agrega `filter=has-public-references:true` a `/members`, filtro que solo existe en
+  `/works` (400). MR inválida que el filtro no detectó; queda para RQ1.
+- Salidas: `results/{pokeapi,crossref}_labels.csv` (hojas de RQ1, 40 candidatas cada una), `*_rq2*.csv`,
+  `*_coverage*.csv`.
+
+Pendiente:
+1. **Etiquetar** (2 personas, cada una en su columna sin ver la otra), resolver desacuerdos en `label_final` y correr
+   `rq1` por API: `python -m mrexp rq1 raw/pokeapi_run1.json raw/pokeapi_run2.json --labels results/pokeapi_labels.csv --name pokeapi`.
+2. Revisar las MRs en la UI (o marcar `status` aceptadas) para `--select accepted`.
+3. RQ3 cuando existan `sut-demo`, su suite tradicional y las MRs manuales: `run demo` y luego `mutants`
+   (y `mutants --select all --name demo_all` + `rq2 --detections` para la pregunta de redundantes).
+4. Cobertura con las MRs manuales (`coverage ... --manual manual_mrs/<api>`).

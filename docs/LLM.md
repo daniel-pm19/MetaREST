@@ -279,6 +279,8 @@ Con Claude sigue pendiente la prueba real (falta key).
 - Proveedor: **Gemini** (`gemini-4-hydrogen` + `gemini-3.5-flash-lite` con esfuerzo `medium` y prompts v2), ver D14
   y D15. Con el nivel gratuito, Hydrogen permite 20 peticiones/día: unos 15 runs por día como máximo (1 generación
   por run más reintentos). No gastar esa cuota en pruebas el día de los experimentos.
-- Congelar `LLMSettings` y la versión del prompt antes del Hito M3 (mié 18) y no cambiarlos durante las corridas.
+- Configuración **congelada** el 13-nov-2026 en `experiments/config/experiment.json` (`PipelineSettings` completo,
+  20 MRs por run). Los runs se lanzan con `python -m mrexp run`, que guarda en cada export el sha256 de esa config y
+  del spec y el commit. No se cambia durante las corridas; si cambia, se repiten todos los runs.
 - Reportar en el paper modelo de generación, modelo de verificación, `effort`, `max_candidates`, versión del prompt y
   cuántas respuestas usaron fallback.

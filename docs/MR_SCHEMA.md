@@ -153,6 +153,7 @@ append-only `decisions`. El candidato solo refleja el `status` resultante.
 - **Backend (Nestor)**: llama a `run_pipeline()` desde una background task, guarda `PipelineSettings` como
   snapshot en el run, el `RunReport` en el run y cada `MRCandidate` en un documento Beanie (colección `candidates`). Las
   transiciones `pending_review → accepted/rejected` solo ocurren vía `POST /candidates/{id}/decision`.
+  Guía paso a paso (código de ejemplo, settings, export): [`INTEGRATION.md`](INTEGRATION.md).
 - **Frontend (Isaac)**: los tipos salen de `/openapi.json`. Mientras tanto, los ejemplos de
   `docs/mr_examples/candidates/` sirven como mocks (MSW).
 

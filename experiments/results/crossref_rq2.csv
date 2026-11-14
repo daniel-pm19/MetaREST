@@ -1,0 +1,13 @@
+run,threshold,run_threshold,set,mrs,clusters,redundant_mrs,redundancy_rate,redundant_pairs,mean_max_similarity
+crossref_run1,0.95,0.975,generated,20,10,10,0.5,16,0.9605
+crossref_run1,0.95,0.975,pre_diversity,20,10,10,0.5,16,0.9605
+crossref_run1,0.95,0.975,post_diversity,17,10,7,0.4118,9,0.9519
+crossref_run1,0.975,0.975,generated,20,15,5,0.25,5,0.9605
+crossref_run1,0.975,0.975,pre_diversity,20,15,5,0.25,5,0.9605
+crossref_run1,0.975,0.975,post_diversity,17,17,0,0.0,0,0.9519
+crossref_run2,0.95,0.975,generated,20,8,12,0.6,27,0.9652
+crossref_run2,0.95,0.975,pre_diversity,19,7,12,0.6316,27,0.966
+crossref_run2,0.95,0.975,post_diversity,13,8,5,0.3846,5,0.9541
+crossref_run2,0.975,0.975,generated,20,14,6,0.3,11,0.9652
+crossref_run2,0.975,0.975,pre_diversity,19,13,6,0.3158,11,0.966
+crossref_run2,0.975,0.975,post_diversity,13,13,0,0.0,0,0.9541

@@ -1,0 +1,2 @@
+group,kind,method,path,param
+metarest_selected,operation,GET,/api/v2/pokemon/{pokemon_id}/encounters,
