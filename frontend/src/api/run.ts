@@ -40,6 +40,7 @@ export interface Decision {
   decision: "accepted" | "rejected";
   justification?: string | null;
   review_time_ms?: number | null;
+  user?: string | null; // nombre de quien decidió
   at: string;
 }
 
