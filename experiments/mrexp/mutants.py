@@ -40,6 +40,15 @@ DETECTING_STRICT = {"violation", "fail"}
 ClientFactory = Callable[[str, str], SUTClient]  # (variant, base_url) -> client
 
 
+def split_command(command: str, *, windows: bool | None = None) -> list[str]:
+    """Parse arguments without a shell; preserve backslashes on Windows."""
+    windows = os.name == "nt" if windows is None else windows
+    args = shlex.split(command, posix=not windows)
+    if windows:
+        args = [arg[1:-1] if len(arg) >= 2 and arg[0] == arg[-1] and arg[0] in "\"'" else arg for arg in args]
+    return args
+
+
 def default_client_factory(timeout: float = 10.0, max_concurrency: int = 4) -> ClientFactory:
     def make(variant: str, base_url: str) -> SUTClient:
         return SUTClient(base_url, timeout=timeout, max_concurrency=max_concurrency)
@@ -104,7 +113,7 @@ def run_pytest_suite(
 
     A failing suite is expected (that is the point); only a missing junit report is an error.
     """
-    cmd = shlex.split(pytest_cmd) if pytest_cmd else [sys.executable, "-m", "pytest"]
+    cmd = split_command(pytest_cmd) if pytest_cmd else [sys.executable, "-m", "pytest"]
     with tempfile.TemporaryDirectory() as tmp:
         junit = Path(tmp) / "junit.xml"
         args = [*cmd, str(tests), f"--junitxml={junit}", "-q", "-p", "no:cacheprovider"]
@@ -137,7 +146,7 @@ def served(
     """
     env = {**os.environ, faults_env: fault or ""}
     proc = subprocess.Popen(
-        shlex.split(cmd_template.format(port=port)),
+        split_command(cmd_template.format(port=port)),
         env=env,
         cwd=cwd,
         stdout=subprocess.DEVNULL,

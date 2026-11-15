@@ -1,0 +1,9 @@
+{
+  "Rules": [{
+    "ID": "metarest-seven-day-backups",
+    "Status": "Enabled",
+    "Filter": {"Prefix": "metarest/"},
+    "Expiration": {"Days": 7},
+    "AbortIncompleteMultipartUpload": {"DaysAfterInitiation": 1}
+  }]
+}

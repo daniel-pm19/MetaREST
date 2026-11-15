@@ -1,0 +1,12 @@
+.git
+**/.venv
+**/node_modules
+**/__pycache__
+**/.env
+**/.env.*
+**/.pytest_cache
+**/.ruff_cache
+.fastembed_cache
+experiments/raw
+infra/data
+work

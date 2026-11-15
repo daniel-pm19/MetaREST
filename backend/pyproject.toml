@@ -1,0 +1,33 @@
+[project]
+name = "metarest-backend"
+version = "0.1.0"
+description = "MetaREST platform and metamorphic testing pipeline"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1", "uvicorn>=0.30,<1", "pydantic>=2.9,<3",
+  "pydantic-settings>=2.6,<3", "beanie>=1.27,<2", "motor>=3.6,<4",
+  "httpx>=0.27,<1", "jsonpath-ng>=1.6,<2", "pyyaml>=6,<7", "jinja2>=3.1,<4",
+  "anthropic>=2.8,<3", "google-genai>=3.3,<4", "fastembed>=0.4,<1",
+  "PyJWT>=2.9,<3", "bcrypt>=4.2,<6", "email-validator>=2,<3",
+]
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "pytest-asyncio>=0.24,<2", "ruff>=0.8,<1", "mongomock-motor>=0.0.34", "coverage>=7,<8"]
+
+[tool.pytest.ini_options]
+addopts = "-p no:cacheprovider"
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.coverage.run]
+source = ["app"]
+branch = true

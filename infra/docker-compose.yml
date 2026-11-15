@@ -1,0 +1,62 @@
+services:
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: [CMD, mongosh, --quiet, --eval, "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DATABASE: metarest
+      JWT_SECRET: ${JWT_SECRET:?Configura JWT_SECRET en backend/.env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Configura ADMIN_EMAIL en backend/.env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Configura ADMIN_PASSWORD en backend/.env}
+      CORS_ORIGINS: '["http://localhost:8080"]'
+      FASTEMBED_CACHE_DIR: /data/fastembed
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    volumes:
+      - fastembed-cache:/data/fastembed
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  sut-demo:
+    build:
+      context: ..
+      dockerfile: sut-demo/Dockerfile
+    environment:
+      FAULTS: ${FAULTS:-}
+    ports:
+      - "127.0.0.1:8001:8001"
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/frontend.Dockerfile
+      args:
+        VITE_API_URL: /api
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  mongo-data:
+  fastembed-cache:

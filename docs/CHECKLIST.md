@@ -5,12 +5,15 @@ Lo que alguien tenga solo en local y no haya subido a `develop` figura como pend
 
 Leyenda: `[x]` hecho · `[~]` parcial · `[ ]` pendiente
 
+> Actualización de Nestor (15-nov-2026): las marcas de su bloque incluyen trabajo local sobre `0904ff6`, todavía sin commit/push. Los hitos publicados y los estados de Daniel/Isaac conservan su evaluación anterior.
+
+
 ## Resumen
 
 | Persona | Área | Estado | Avance |
 |---|---|---|---|
 | **Daniel** | Pipeline IA + runner de experimentos | Casi completo | ██████████░ ~90 % |
-| **Nestor** | Plataforma backend, sut-demo, infra | **Sin entregas en el repo** | ░░░░░░░░░░░ 0 % |
+| **Nestor** | Plataforma backend, sut-demo, infra | Backend y demo implementados localmente; infraestructura preparada, sin desplegar | Ver bloque detallado |
 | **Isaac** | Frontend, MRs manuales, SUS | Frontend completo con datos de demostración; falta conectarlo y la parte de experimentos | ███████░░░░ ~70 % |
 
 | Hito | Fecha | Estado |
@@ -54,48 +57,53 @@ Leyenda: `[x]` hecho · `[~]` parcial · `[ ]` pendiente
 
 ## Nestor — Plataforma backend, API demo e infraestructura
 
-> En `develop` no hay nada de esta área todavía (no existen `backend/app/main.py`, `pyproject.toml`, `sut-demo/`, `infra/` ni `.github/`).
+> Actualización local del 15-nov-2026, basada en `0904ff6`: backend, autenticación, endpoints y API demo implementados y probados. Cambios todavía sin publicar. La infraestructura tiene recetas preparadas; su despliegue no se considera hecho.
+
+Verificación: 267 pruebas backend, 31 de experimentos, 25 pruebas de plataforma
+repetidas contra MongoDB 7 real, build frontend correcto y manifiestos Compose
+válidos. Suite tradicional: 11 casos en el original; detecta los 8 fallos de la
+demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 
 ### Backend base
-- [ ] Scaffold FastAPI con `uv` y `backend/pyproject.toml` (requisitos en `AGENTS.md`)
-- [ ] `GET /health`
-- [ ] Configuración con pydantic-settings y `.env`
-- [ ] Modelos Beanie/MongoDB: `users`, `projects`, `api_contexts`, `prompt_templates`, `settings`, `runs`, `candidates`, `decisions` (append-only), `audit_log`
-- [ ] **`docs/API.md`**: contrato de endpoints que el frontend necesita ya
+- [x] Scaffold FastAPI con `uv` y `backend/pyproject.toml` (requisitos en `AGENTS.md`)
+- [x] `GET /health`
+- [x] Configuración con pydantic-settings y `.env`
+- [x] Modelos Beanie/MongoDB: `users`, `projects`, `api_contexts`, `prompt_templates`, `settings`, `runs`, `candidates`, `decisions` (append-only), `audit_log`
+- [x] **`docs/API.md`**: contrato de endpoints que el frontend necesita ya
 
 ### Autenticación y permisos
-- [ ] Login con JWT + bcrypt, `GET /auth/me`
-- [ ] `require_role()` con Admin, QA Auditor y Observer
-- [ ] Seed del usuario admin
-- [ ] CRUD de `/users` (Admin)
+- [x] Login con JWT + bcrypt, `GET /auth/me`
+- [x] `require_role()` con Admin, QA Auditor y Observer
+- [x] Seed del usuario admin
+- [x] CRUD de `/users` (Admin)
 
 ### Endpoints
-- [ ] `POST /projects` (con subida del OpenAPI), `PUT/GET /projects`
-- [ ] `POST /projects/{id}/runs` (202 + `BackgroundTasks`, usando `execute_run` de `INTEGRATION.md §1.1`)
-- [ ] `GET /runs/{id}` (con `report.stages[]`, `counts`, `status`) y listado de runs por proyecto
-- [ ] `GET /runs/{id}/candidates?status=`
-- [ ] `POST /candidates/{id}/decision` (justificación obligatoria al rechazar, solo `pending_review`, guarda `review_time_ms`)
-- [ ] `GET /audit` y filtro por `run_id`
-- [ ] `GET /metrics/project/{id}` y `GET /metrics/compare?runs=`
-- [ ] `GET/PUT /settings/llm`, `/settings/thresholds`, CRUD `/prompts`
-- [ ] **`GET /candidates/export?run_id=`** (JSON y CSV; lo necesitan los experimentos)
-- [ ] Tests de RBAC por endpoint
+- [x] `POST /projects` (con subida del OpenAPI), `PUT/GET /projects`
+- [x] `POST /projects/{id}/runs` (202 + `BackgroundTasks`, usando `execute_run` de `INTEGRATION.md §1.1`)
+- [x] `GET /runs/{id}` (con `report.stages[]`, `counts`, `status`) y listado de runs por proyecto
+- [x] `GET /runs/{id}/candidates?status=`
+- [x] `POST /candidates/{id}/decision` (justificación obligatoria al rechazar, solo `pending_review`, guarda `review_time_ms`)
+- [x] `GET /audit` y filtro por `run_id`
+- [x] `GET /metrics/project/{id}` y `GET /metrics/compare?runs=`
+- [x] `GET/PUT /settings/llm`, `/settings/thresholds`, versiones de `/prompts` (ediciones crean un id nuevo para preservar provenance)
+- [x] **`GET /candidates/export?run_id=`** (JSON y CSV; lo necesitan los experimentos)
+- [x] Tests de RBAC por endpoint
 
 ### API demo (`sut-demo/`) — bloquea RQ1–RQ3 sobre la demo
-- [ ] Catálogo con `GET /search` (`q`, `limit`, `page`, `sort`, `category`), datos deterministas
-- [ ] 8–10 fallos activables con `FAULTS=` (`ignore_limit`, `wrong_total`, `page_off_by_one`, `sort_unstable`, `filter_or_instead_of_and`, `drops_last_page_item`…), todos observables con GET
-- [ ] Puerto por línea de comandos y `GET /health`
-- [ ] `/openapi.json` con descripciones, ejemplos, enums y rangos
-- [ ] Suite pytest tradicional (`SUT_BASE_URL`) para la demo y, si hay tiempo, para PokeAPI y Crossref
+- [x] Catálogo con `GET /search` (`q`, `limit`, `page`, `sort`, `category`), datos deterministas
+- [x] 8 fallos activables con `FAULTS=` (`ignore_limit`, `wrong_total`, `page_off_by_one`, `filter_or`, `repeat_page`, `drop_on_sort`, `ignore_category`, `limit_dependent_order`), todos observables con GET
+- [x] Puerto por línea de comandos y `GET /health`
+- [x] `/openapi.json` con descripciones, ejemplos, enums y rangos
+- [x] Suite pytest tradicional (`SUT_BASE_URL`) para la demo (11 casos; original y 8 variantes comprobados). Las suites públicas opcionales siguen pendientes
 
 ### Infraestructura y despliegue
-- [ ] `infra/docker-compose.yml` (dev: mongo, backend, frontend, sut-demo)
-- [ ] `ci.yml`: ruff, pytest y build del frontend
+- [~] `infra/docker-compose.yml`: servicios y volúmenes definidos; `compose config` correcto; pendiente probar el arranque completo
+- [~] `ci.yml` preparado: ruff, pytest con Mongo real en CI, experimentos y build frontend; pendiente ejecutarlo en GitHub
 - [ ] Instancia EC2 t3.medium, security group y subdominio DuckDNS
-- [ ] `docker-compose.prod.yml` + Nginx + HTTPS (certbot)
-- [ ] `deploy.yml`: push a `main` → GHCR → SSH a EC2
-- [ ] Backup diario `mongodump` → S3 (retención 7 días) y CloudWatch básico
-- [ ] Volumen o descarga en build del modelo de fastembed
+- [~] `docker-compose.prod.yml` y Nginx HTTPS preparados; manifiesto validado; faltan dominio, certificado y despliegue real
+- [~] `deploy.yml` preparado: CI exitoso en main → GHCR → SSH verificado a EC2; sin ejecutar
+- [~] Script mongodump→S3 y regla de retención de 7 días preparados; falta configurar bucket, cron, restauración y CloudWatch
+- [~] Volumen fastembed declarado; pendiente verificar descarga/persistencia con Docker
 
 ---
 
