@@ -93,3 +93,15 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry: () 
     </div>
   );
 }
+
+import { roleLabels, type Role } from "../api/admin";
+
+const roleTone: Record<Role, string> = {
+  admin: "bg-violet-50 text-violet-700 ring-violet-600/20",
+  qa: "bg-brand-50 text-brand-700 ring-brand-600/20",
+  observer: "bg-slate-100 text-slate-600 ring-slate-500/20",
+};
+
+export function RoleBadge({ role }: { role: Role }) {
+  return <span className={clsx("rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset", roleTone[role])}>{roleLabels[role]}</span>;
+}
