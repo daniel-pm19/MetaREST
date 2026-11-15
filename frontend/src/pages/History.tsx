@@ -32,6 +32,7 @@ export function HistoryPage() {
                 <p className="font-medium">{d.title}</p>
                 {d.justification && <p className="mt-1 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">«{d.justification}»</p>}
                 <p className="mt-1.5 text-xs text-slate-500">
+                  {d.user && <>por <strong className="font-medium text-slate-700">{d.user}</strong> · </>}
                   <span className="font-mono">{d.candidate_id}</span> · {fmt(d.at)}
                   {dur(d.review_time_ms) && ` · revisada en ${dur(d.review_time_ms)}`}
                 </p>

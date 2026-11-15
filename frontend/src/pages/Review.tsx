@@ -1,6 +1,8 @@
 ﻿import { useEffect, useMemo, useRef, useState } from "react";
 import { clsx } from "clsx";
-import { AlertTriangle, ArrowLeft, Check, ChevronRight, Inbox, Loader2, Search, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Check, ChevronRight, Eye, Inbox, Loader2, Search, X } from "lucide-react";
+import { roleLabels } from "../api/admin";
+import { useAuth } from "../auth";
 import { combined, pct, relationLabels, requestLine, titleOf, transformationLabel } from "../api/format";
 import type { HttpExchange, MRCandidate, RequestSpec } from "../api/types";
 import { MethodBadge, ScoreBar, ScoreChip, StatusBadge, VerdictBadge, ErrorState } from "../components/ui";
@@ -76,6 +78,7 @@ function Evidence({ c }: { c: MRCandidate }) {
 
 function Detail({ c, onBack }: { c: MRCandidate; onBack: () => void }) {
   const { decide } = useStore();
+  const { can, user } = useAuth();
   const spec = c.spec!;
   const [justification, setJustification] = useState("");
   const [error, setError] = useState("");
@@ -153,7 +156,7 @@ function Detail({ c, onBack }: { c: MRCandidate; onBack: () => void }) {
 
       <p className="text-xs text-slate-400">Generada por {c.provenance.model} · prompt {c.provenance.prompt_version}</p>
 
-      {!decided && (
+      {!decided && can.decide && (
         <section>
           <label htmlFor="just" className="mb-1.5 block text-sm font-medium">
             Justificación <span className="font-normal text-slate-500">(obligatoria al rechazar)</span>
@@ -176,6 +179,8 @@ function Detail({ c, onBack }: { c: MRCandidate; onBack: () => void }) {
       <div className="sticky bottom-0 -mx-5 flex flex-wrap items-center gap-3 border-t border-slate-200 bg-white/95 px-5 py-3 backdrop-blur md:-mx-7 md:px-7">
         {decided ? (
           <p className="text-sm text-slate-600">Esta decisión es definitiva y quedó registrada en la auditoría.</p>
+        ) : !can.decide ? (
+          <p className="flex items-center gap-2 text-sm text-slate-600"><Eye className="size-4" aria-hidden /> Modo lectura: como {user ? roleLabels[user.role] : "observador"} no puedes aceptar ni rechazar MRs.</p>
         ) : (
           <>
             <button disabled={busy} onClick={() => submit("accepted")} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-60">
