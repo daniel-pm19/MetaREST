@@ -20,7 +20,9 @@ const parse = (): Route => {
 
 const Spinner = ({ text }: { text: string }) => (
   <div className="grid h-full place-items-center text-slate-500">
-    <div className="flex items-center gap-2"><Loader2 className="size-5 animate-spin" aria-hidden /> {text}</div>
+    <div className="flex items-center gap-2">
+      <Loader2 className="size-5 animate-spin" aria-hidden /> {text}
+    </div>
   </div>
 );
 
@@ -42,7 +44,15 @@ function Shell() {
   if (!loaded) page = <Spinner text="Cargando análisis…" />;
   else if (loadError && current !== "proyectos") page = <ErrorState message={loadError} onRetry={reload} />;
   else {
-    page = { resumen: <Dashboard />, revision: <Review />, descartadas: <Discarded />, decisiones: <HistoryPage />, comparar: <Compare />, proyectos: <Projects />, admin: <Admin /> }[current];
+    page = {
+      resumen: <Dashboard />,
+      revision: <Review />,
+      descartadas: <Discarded />,
+      decisiones: <HistoryPage />,
+      comparar: <Compare />,
+      proyectos: <Projects />,
+      admin: <Admin />,
+    }[current];
   }
   return <Layout route={current}>{page}</Layout>;
 }
@@ -51,9 +61,17 @@ function Gate() {
   const { status } = useAuth();
   if (status === "loading") return <Spinner text="Verificando sesión…" />;
   if (status === "out") return <Login />;
-  return <StoreProvider><Shell /></StoreProvider>;
+  return (
+    <StoreProvider>
+      <Shell />
+    </StoreProvider>
+  );
 }
 
 export default function App() {
-  return <AuthProvider><Gate /></AuthProvider>;
+  return (
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
+  );
 }

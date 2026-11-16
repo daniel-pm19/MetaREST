@@ -10,7 +10,12 @@ const methodColors: Record<string, string> = {
 
 export function MethodBadge({ method }: { method: Method }) {
   return (
-    <span className={clsx("rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold ring-1 ring-inset", methodColors[method] ?? "bg-slate-100 text-slate-700 ring-slate-500/20")}>
+    <span
+      className={clsx(
+        "rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold ring-1 ring-inset",
+        methodColors[method] ?? "bg-slate-100 text-slate-700 ring-slate-500/20",
+      )}
+    >
       {method}
     </span>
   );
@@ -63,7 +68,14 @@ export function ScoreBar({ label, value, reason }: { label: string; value: numbe
         <span className="text-slate-600">{label}</span>
         <span className={clsx("font-semibold tabular-nums", text[tone])}>{value}</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-100" role="meter" aria-label={label} aria-valuenow={value} aria-valuemin={0} aria-valuemax={100}>
+      <div
+        className="h-2 overflow-hidden rounded-full bg-slate-100"
+        role="meter"
+        aria-label={label}
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <div className={clsx("h-full rounded-full transition-[width] duration-500", bar[tone])} style={{ width: `${value}%` }} />
       </div>
       {reason && <p className="mt-1 text-xs text-slate-500">{reason}</p>}

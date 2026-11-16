@@ -19,7 +19,10 @@ export const isMock = !API_URL;
 export { demoAccounts };
 
 export class ApiError extends Error {
-  constructor(message: string, readonly status?: number) {
+  constructor(
+    message: string,
+    readonly status?: number,
+  ) {
     super(message);
   }
 }
@@ -95,7 +98,16 @@ function loadDb(): MockDb {
   } catch {
     /* corrupto: se reinicia */
   }
-  return { runs: [initialRun()], candidates: mockCandidates, decisions: [], projects: seedProjects, users: seedUsers, thresholds: seedThresholds, llm: seedLLM, prompts: seedPrompts };
+  return {
+    runs: [initialRun()],
+    candidates: mockCandidates,
+    decisions: [],
+    projects: seedProjects,
+    users: seedUsers,
+    thresholds: seedThresholds,
+    llm: seedLLM,
+    prompts: seedPrompts,
+  };
 }
 const saveDb = (db: MockDb) => localStorage.setItem(KEY, JSON.stringify(db));
 
@@ -170,7 +182,13 @@ export const api = {
     const db = loadDb();
     mockUser(db, "admin", "qa");
     if (!/openapi|swagger/i.test(p.openapi)) throw new ApiError("El archivo no parece una especificación OpenAPI (falta «openapi» o «swagger»).", 422);
-    const created: Project = { id: `proj_${Date.now().toString(36)}`, name: p.name, base_url: p.base_url, endpoints: countEndpoints(p.openapi), created_at: new Date().toISOString() };
+    const created: Project = {
+      id: `proj_${Date.now().toString(36)}`,
+      name: p.name,
+      base_url: p.base_url,
+      endpoints: countEndpoints(p.openapi),
+      created_at: new Date().toISOString(),
+    };
     db.projects.push(created);
     saveDb(db);
     return created;
@@ -270,21 +288,23 @@ export const api = {
       const times = decs.map((d) => d.review_time_ms).filter((t): t is number => typeof t === "number");
       const accepted = n("accepted");
       const rejected = n("rejected");
-      return [{
-        run_id: id,
-        round: run.round,
-        generated: cs.length,
-        discarded: n("discarded"),
-        pending: n("pending_review"),
-        accepted,
-        rejected,
-        violations: kept.filter((c) => c.execution?.verdict === "violation").length,
-        confirmed_faults: kept.filter((c) => c.status === "accepted" && c.execution?.verdict === "violation").length,
-        acceptance_rate: accepted + rejected ? accepted / (accepted + rejected) : null,
-        tokens: run.report.stages.reduce((a, s) => a + (s.usage?.input_tokens ?? 0) + (s.usage?.output_tokens ?? 0), 0),
-        avg_combined: kept.length ? Math.round((kept.reduce((a, c) => a + (c.scores?.combined ?? 0), 0) / kept.length) * 100) : 0,
-        avg_review_ms: times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null,
-      }];
+      return [
+        {
+          run_id: id,
+          round: run.round,
+          generated: cs.length,
+          discarded: n("discarded"),
+          pending: n("pending_review"),
+          accepted,
+          rejected,
+          violations: kept.filter((c) => c.execution?.verdict === "violation").length,
+          confirmed_faults: kept.filter((c) => c.status === "accepted" && c.execution?.verdict === "violation").length,
+          acceptance_rate: accepted + rejected ? accepted / (accepted + rejected) : null,
+          tokens: run.report.stages.reduce((a, s) => a + (s.usage?.input_tokens ?? 0) + (s.usage?.output_tokens ?? 0), 0),
+          avg_combined: kept.length ? Math.round((kept.reduce((a, c) => a + (c.scores?.combined ?? 0), 0) / kept.length) * 100) : 0,
+          avg_review_ms: times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : null,
+        },
+      ];
     });
   },
 

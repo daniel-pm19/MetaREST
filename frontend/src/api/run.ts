@@ -7,7 +7,11 @@ export type StageName = Schemas["StageName"];
 export type StageStatus = Schemas["StageStatus"];
 // El servidor siempre envía stages/warnings; el esquema los marca opcionales por tener valor por defecto.
 export type StageReport = Omit<Schemas["StageReport"], "usage"> & { usage?: Partial<Schemas["TokenUsage"]> & { input_tokens: number; output_tokens: number } };
-export type RunReport = Omit<Schemas["RunReport"], "stages" | "warnings" | "fallback_used"> & { stages: StageReport[]; warnings: string[]; fallback_used?: boolean };
+export type RunReport = Omit<Schemas["RunReport"], "stages" | "warnings" | "fallback_used"> & {
+  stages: StageReport[];
+  warnings: string[];
+  fallback_used?: boolean;
+};
 export type Run = Omit<Schemas["RunOutput"], "report" | "project_name"> & { report: RunReport; project_name?: string };
 
 export interface Decision {

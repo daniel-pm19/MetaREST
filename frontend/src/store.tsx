@@ -101,7 +101,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       try {
         await api.decide(id, input);
         setCandidates((cs) => cs.map((c) => (c.id === id ? { ...c, status: input.decision } : c)));
-        if (run) api.listDecisions(run.id).then(setDecisions).catch(() => {});
+        if (run)
+          api
+            .listDecisions(run.id)
+            .then(setDecisions)
+            .catch(() => {});
         notify(input.decision === "accepted" ? "MR aceptada" : "MR rechazada");
         return true;
       } catch (e) {
@@ -135,8 +139,45 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const project = projects.find((p) => p.id === projectId) ?? null;
   const value = useMemo<Store>(
-    () => ({ projects, project, runs, run, loaded, candidates, decisions, loadError, starting, toast, selectProject, selectRun, decide, startRun, reload, notify, resetDemo, dismissToast: () => setToast(null) }),
-    [projects, project, runs, run, loaded, candidates, decisions, loadError, starting, toast, selectProject, selectRun, decide, startRun, reload, notify, resetDemo],
+    () => ({
+      projects,
+      project,
+      runs,
+      run,
+      loaded,
+      candidates,
+      decisions,
+      loadError,
+      starting,
+      toast,
+      selectProject,
+      selectRun,
+      decide,
+      startRun,
+      reload,
+      notify,
+      resetDemo,
+      dismissToast: () => setToast(null),
+    }),
+    [
+      projects,
+      project,
+      runs,
+      run,
+      loaded,
+      candidates,
+      decisions,
+      loadError,
+      starting,
+      toast,
+      selectProject,
+      selectRun,
+      decide,
+      startRun,
+      reload,
+      notify,
+      resetDemo,
+    ],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

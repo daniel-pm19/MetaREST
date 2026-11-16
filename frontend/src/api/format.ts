@@ -16,12 +16,18 @@ export function requestLine(r: RequestSpec): string {
 
 export function transformationLabel(t: Transformation): string {
   switch (t.op) {
-    case "set_param": return `Fijar ${t.param} = ${JSON.stringify(t.value)}`;
-    case "remove_param": return `Quitar ${t.param}`;
-    case "add_param": return `Añadir ${t.param} = ${JSON.stringify(t.value)}`;
-    case "scale_param": return `Multiplicar ${t.param} por ${t.factor}`;
-    case "append_to_param": return `Añadir «${t.value}» a ${t.param}`;
-    case "move_param": return `Mover ${t.param} de ${t.from_location} a ${t.to_location}${t.to_param ? ` (${t.to_param})` : ""}`;
+    case "set_param":
+      return `Fijar ${t.param} = ${JSON.stringify(t.value)}`;
+    case "remove_param":
+      return `Quitar ${t.param}`;
+    case "add_param":
+      return `Añadir ${t.param} = ${JSON.stringify(t.value)}`;
+    case "scale_param":
+      return `Multiplicar ${t.param} por ${t.factor}`;
+    case "append_to_param":
+      return `Añadir «${t.value}» a ${t.param}`;
+    case "move_param":
+      return `Mover ${t.param} de ${t.from_location} a ${t.to_location}${t.to_param ? ` (${t.to_param})` : ""}`;
   }
 }
 

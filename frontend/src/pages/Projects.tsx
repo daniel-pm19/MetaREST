@@ -62,15 +62,42 @@ function NewProjectForm({ onDone }: { onDone: (id: string) => void }) {
     <form onSubmit={submit} noValidate className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5">
       <h2 className="text-lg font-semibold">Registrar una API</h2>
       <div>
-        <label htmlFor="pname" className="mb-1.5 block text-sm font-medium">Nombre</label>
-        <input id="pname" value={name} onChange={(e) => setName(e.target.value)} aria-invalid={!!errors.name} className={clsx(field, errors.name ? bad : ok)} placeholder="Tienda online" />
-        {errors.name && <p role="alert" className="mt-1 text-xs text-red-700">{errors.name}</p>}
+        <label htmlFor="pname" className="mb-1.5 block text-sm font-medium">
+          Nombre
+        </label>
+        <input
+          id="pname"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          aria-invalid={!!errors.name}
+          className={clsx(field, errors.name ? bad : ok)}
+          placeholder="Tienda online"
+        />
+        {errors.name && (
+          <p role="alert" className="mt-1 text-xs text-red-700">
+            {errors.name}
+          </p>
+        )}
       </div>
       <div>
-        <label htmlFor="purl" className="mb-1.5 block text-sm font-medium">URL base de la API</label>
-        <input id="purl" inputMode="url" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} aria-invalid={!!errors.url} className={clsx(field, errors.url ? bad : ok)} placeholder="https://api.miapp.com" />
+        <label htmlFor="purl" className="mb-1.5 block text-sm font-medium">
+          URL base de la API
+        </label>
+        <input
+          id="purl"
+          inputMode="url"
+          value={baseUrl}
+          onChange={(e) => setBaseUrl(e.target.value)}
+          aria-invalid={!!errors.url}
+          className={clsx(field, errors.url ? bad : ok)}
+          placeholder="https://api.miapp.com"
+        />
         <p className="mt-1 text-xs text-slate-500">MetaREST solo hace peticiones GET y HEAD a esta URL.</p>
-        {errors.url && <p role="alert" className="mt-1 text-xs text-red-700">{errors.url}</p>}
+        {errors.url && (
+          <p role="alert" className="mt-1 text-xs text-red-700">
+            {errors.url}
+          </p>
+        )}
       </div>
       <div>
         <span className="mb-1.5 block text-sm font-medium">Especificación OpenAPI</span>
@@ -79,17 +106,35 @@ function NewProjectForm({ onDone }: { onDone: (id: string) => void }) {
           type="button"
           onClick={() => fileRef.current?.click()}
           onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => { e.preventDefault(); onFile(e.dataTransfer.files[0]); }}
-          className={clsx("flex w-full flex-col items-center gap-1 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors hover:border-brand-500 hover:bg-brand-50/40", errors.spec ? "border-red-400" : spec ? "border-emerald-400 bg-emerald-50/40" : "border-slate-300")}
+          onDrop={(e) => {
+            e.preventDefault();
+            onFile(e.dataTransfer.files[0]);
+          }}
+          className={clsx(
+            "flex w-full flex-col items-center gap-1 rounded-xl border-2 border-dashed px-4 py-6 text-center transition-colors hover:border-brand-500 hover:bg-brand-50/40",
+            errors.spec ? "border-red-400" : spec ? "border-emerald-400 bg-emerald-50/40" : "border-slate-300",
+          )}
         >
           {spec ? <Check className="size-6 text-emerald-600" aria-hidden /> : <FileUp className="size-6 text-slate-400" aria-hidden />}
           <span className="text-sm font-medium">{spec ? spec.name : "Arrastra tu archivo o haz clic para elegirlo"}</span>
           <span className="text-xs text-slate-500">{spec ? "Haz clic para cambiarlo" : "JSON o YAML · máx. 2 MB"}</span>
         </button>
-        {errors.spec && <p role="alert" className="mt-1 text-xs text-red-700">{errors.spec}</p>}
+        {errors.spec && (
+          <p role="alert" className="mt-1 text-xs text-red-700">
+            {errors.spec}
+          </p>
+        )}
       </div>
-      {errors.form && <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{errors.form}</p>}
-      <button type="submit" disabled={busy} className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60">
+      {errors.form && (
+        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errors.form}
+        </p>
+      )}
+      <button
+        type="submit"
+        disabled={busy}
+        className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700 disabled:opacity-60"
+      >
         {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Plus className="size-4" aria-hidden />} Registrar proyecto
       </button>
     </form>
@@ -113,21 +158,40 @@ export function Projects() {
             {projects.map((p) => {
               const active = p.id === project?.id;
               return (
-                <li key={p.id} className={clsx("flex flex-wrap items-center gap-4 rounded-2xl border bg-white p-4", active ? "border-brand-500 ring-1 ring-brand-500" : "border-slate-200")}>
+                <li
+                  key={p.id}
+                  className={clsx(
+                    "flex flex-wrap items-center gap-4 rounded-2xl border bg-white p-4",
+                    active ? "border-brand-500 ring-1 ring-brand-500" : "border-slate-200",
+                  )}
+                >
                   <div className="min-w-0 flex-1">
                     <p className="font-semibold">{p.name}</p>
                     <p className="truncate font-mono text-xs text-slate-500">{p.base_url}</p>
-                    <p className="mt-1 text-xs text-slate-500">{p.endpoints != null && `${p.endpoints} endpoints GET · `}registrado el {fmtDate(p.created_at)}</p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {p.endpoints != null && `${p.endpoints} endpoints GET · `}registrado el {fmtDate(p.created_at)}
+                    </p>
                   </div>
                   {active ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700"><Check className="size-3" aria-hidden /> Activo</span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700">
+                      <Check className="size-3" aria-hidden /> Activo
+                    </span>
                   ) : (
-                    <button onClick={() => selectProject(p.id)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition-colors hover:border-brand-500 hover:text-brand-700">Abrir</button>
+                    <button
+                      onClick={() => selectProject(p.id)}
+                      className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium transition-colors hover:border-brand-500 hover:text-brand-700"
+                    >
+                      Abrir
+                    </button>
                   )}
                 </li>
               );
             })}
-            {projects.length === 0 && <li className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">Aún no hay proyectos.{can.manageProjects ? " Registra tu primera API." : ""}</li>}
+            {projects.length === 0 && (
+              <li className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-slate-500">
+                Aún no hay proyectos.{can.manageProjects ? " Registra tu primera API." : ""}
+              </li>
+            )}
           </ul>
         </section>
         {can.manageProjects && <NewProjectForm onDone={selectProject} />}
