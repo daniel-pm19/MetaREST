@@ -129,11 +129,11 @@ demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 - [x] ESLint (`npm run lint`) con reglas de hooks; TypeScript fijado en 6 porque typescript-eslint no soporta TS 7
 
 ### Pendiente — frontend
-- [ ] Costo en dinero por run (hoy solo tokens)
+- [x] Costo estimado por run en el Resumen: precios por modelo vía `VITE_LLM_PRICES` (el repo no trae precios); cota inferior, sin tokens de caché
 - [~] **Conectar al backend real**: rutas y formas verificadas contra `docs/API.md` y el esquema OpenAPI; falta una prueba de punta a punta con `VITE_API_URL` y Mongo, y decidir si se retiran los mocks
 - [~] `gen:api` usa `openapi.snapshot.json` (o `OPENAPI_URL`); regenerar el snapshot si cambia el backend. `Decision` sigue a mano porque `/audit` no tiene `response_model`
-- [~] Prettier configurado (`npm run format`), sin aplicar; faltan pruebas de componentes
-- [ ] Revisar la vista móvil y la accesibilidad con lector de pantalla
+- [x] Prettier aplicado a `src/` (`npm run format`) y 19 pruebas con Vitest + Testing Library (`npm test`): cliente demo y permisos por rol, costo, componentes, Login y axe
+- [~] Accesibilidad: prueba automática con axe-core sobre Login (sin contraste ni layout, que jsdom no calcula). Faltan la revisión manual en móvil y con lector de pantalla
 
 > Los endpoints que el frontend asume y que Nestor debe confirmar: `POST /auth/login` (`{email, password}` → `{access_token, user}`), `GET /auth/me`, `GET /projects/{id}/runs`, `GET /metrics/compare?runs=`, `GET/POST/PATCH /users`, `GET/PUT /settings/llm` y `/settings/thresholds`, `GET/POST /prompts`. Ver `frontend/src/api/client.ts`.
 >
@@ -142,10 +142,10 @@ demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 > Desviación del plan: no se usó shadcn/ui, React Router ni TanStack Query/MSW; se usan Tailwind, rutas por hash y un mock propio. Se puede migrar si el equipo lo prefiere.
 
 ### Pendiente — experimentos y paper
-- [ ] **MRs manuales** (5–8 por API) en `experiments/manual_mrs/{demo,pokeapi,crossref}/`, escritas **sin mirar** las generadas por MetaREST; validar con `mrexp mutants --manual`
+- [x] **MRs manuales**: 8 (demo), 7 (PokeAPI) y 6 (Crossref) en `experiments/manual_mrs/`, escritas desde el OpenAPI y el README de la demo sin mirar MRs generadas; las 21 pasan en la API original. Salvedad: ya conocía los nombres de los fallos inyectados de la demo
 - [ ] Etiquetado de validez (RQ1) como segundo etiquetador, según `experiments/LABELING.md`
-- [ ] Agendar y ejecutar **SUS** (10 ítems, ≥ 5 participantes) — RQ4
-- [ ] Figuras del paper a partir de `experiments/results/`
+- [~] **SUS**: protocolo, tareas, cuestionario en español, plantilla de respuestas y script de puntuación en `experiments/sus/`. Falta agendar y ejecutar las sesiones (≥ 5 participantes)
+- [x] Figuras del paper: `experiments/figures/make_figures.py` genera RQ1, RQ2, cobertura y RQ3 (PNG y PDF)
 
 ---
 
