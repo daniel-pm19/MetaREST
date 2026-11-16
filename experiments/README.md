@@ -225,3 +225,25 @@ detecta 7/8. Una MR descartada por semántica también detecta `page_off_by_one`
 
 Las líneas no cubiertas son sobre todo las de los fallos inyectados (solo corren con `FAULTS`), así que el máximo
 alcanzable en el original es menor que 100 %.
+
+## Revisión del QA en la plataforma (RQ3 con `--select accepted`, RQ4)
+
+Las MRs de un run de experimento se revisan en la UI sin regenerarlas: `backend/scripts/import_run.py` carga el export
+como una iteración más de un proyecto existente (mismos ids y `run_id`), y `backend/scripts/export_run.py` lo saca de
+nuevo con las decisiones aplicadas. Desde la raíz, con el stack de Docker Compose levantado (`infra/README.md`):
+
+1. En la UI, crear el proyecto «API demo» con `experiments/specs/demo.json` y URL base `http://sut-demo:8001`.
+2. Importar: `docker compose --env-file backend/.env -f infra/docker-compose.yml exec -T backend python -m scripts.import_run --project "API demo" < experiments/raw/demo_run1.json`
+3. Revisar las 12 pendientes como QA (aceptar o rechazar con justificación); la UI mide el tiempo de revisión.
+4. Exportar: `docker compose --env-file backend/.env -f infra/docker-compose.yml exec -T backend python -m scripts.export_run demo_run1 > experiments/raw/demo_run1_reviewed.json`
+5. RQ3 con las aceptadas: `python -m mrexp mutants --name demo_accepted --run raw/demo_run1_reviewed.json --select accepted ...`
+   (mismas opciones que `demo`). Los tiempos de revisión (RQ4) están en `GET /audit?run_id=demo_run1`.
+
+Resultado de la revisión (16-nov-2026, 1 revisor: Daniel): **12/12 aceptadas**, 0 rechazadas. Como se aceptaron todas
+las que pasaron el filtro, RQ3 con `--select accepted` (`results/demo_accepted_*.csv`) es idéntico al de `passed`:
+MetaREST 6/8, manual + MetaREST 8/8.
+
+Tiempos de revisión (`results/demo_review_times.csv`, de la colección `decisions`): mediana 3.6 s, media 40.6 s,
+rango 0.5 s – 3.7 min. **Ojo para RQ4**: 6 decisiones consecutivas tardaron entre 0.5 y 1.2 s cada una, lo que no
+alcanza para leer una MR; con un solo revisor y esa distribución, el tiempo por MR no es representativo. Conviene
+medir RQ4 con los participantes de las sesiones SUS (`sus/PROTOCOL.md`) o reportar estos datos con esa salvedad.
