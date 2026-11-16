@@ -57,7 +57,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     try {
       const ps = await api.listProjects();
       const pid = ps.some((p) => p.id === projectId) ? projectId : (ps[0]?.id ?? projectId);
-      const rs = await api.listRuns(pid);
+      // Sin proyectos registrados no hay nada que pedir (el id por defecto no existiría en el backend real).
+      const rs = ps.length ? await api.listRuns(pid) : [];
       const latest = rs.find((r) => r.id === runId) ?? rs[rs.length - 1];
       const [cands, decs] = latest ? await Promise.all([api.listCandidates(latest.id), api.listDecisions(latest.id)]) : [[], []];
       setProjects(ps);

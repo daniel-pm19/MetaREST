@@ -47,7 +47,8 @@ function Users() {
     ev.preventDefault();
     if (form.name.trim().length < 2) return setError("Escribe el nombre de la persona.");
     if (!/^\S+@\S+\.\S+$/.test(form.email)) return setError("Escribe un correo válido.");
-    if (form.password.length < 8) return setError("La contraseña temporal debe tener al menos 8 caracteres.");
+    const bytes = new TextEncoder().encode(form.password).length;
+    if (bytes < 12 || bytes > 72) return setError("La contraseña temporal debe tener entre 12 y 72 caracteres.");
     setError(null);
     setBusy(true);
     try {
@@ -177,7 +178,7 @@ function Users() {
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
-          <p className="mt-1 text-xs text-slate-500">Mínimo 8 caracteres.</p>
+          <p className="mt-1 text-xs text-slate-500">Entre 12 y 72 caracteres.</p>
         </div>
         {error && (
           <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
@@ -206,6 +207,7 @@ function Num({
   min,
   max,
   step,
+  optional,
 }: {
   id: string;
   label: string;
@@ -215,8 +217,10 @@ function Num({
   min: number;
   max: number;
   step: number;
+  /** Vacío = sin valor (p. ej. sin límite). */
+  optional?: boolean;
 }) {
-  const bad = Number.isNaN(value) || value < min || value > max;
+  const bad = Number.isNaN(value) ? !optional : value < min || value > max;
   return (
     <div>
       <label htmlFor={id} className="mb-1 block text-sm font-medium">
@@ -404,7 +408,8 @@ function Settings() {
           <Num
             id="rpm"
             label="Peticiones por minuto"
-            hint="Límite del cliente; evita agotar la cuota."
+            hint="Límite del cliente; evita agotar la cuota. Vacío = sin límite."
+            optional
             value={llm.requests_per_minute ?? NaN}
             onChange={(n) => setLLM({ ...llm, requests_per_minute: Number.isNaN(n) ? null : n })}
             min={1}

@@ -130,7 +130,7 @@ demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 
 ### Pendiente — frontend
 - [x] Costo estimado por run en el Resumen: precios por modelo vía `VITE_LLM_PRICES` (el repo no trae precios); cota inferior, sin tokens de caché
-- [~] **Conectar al backend real**: rutas y formas verificadas contra `docs/API.md` y el esquema OpenAPI; falta una prueba de punta a punta con `VITE_API_URL` y Mongo, y decidir si se retiran los mocks
+- [x] **Conectado al backend real** (16-nov): probado en el navegador con `VITE_API_URL` contra el backend de Nestor (Mongo simulado con mongomock, LLM falso, API demo real como SUT): login por rol, registro de proyecto con OpenAPI, run completo, revisión con evidencia, aceptar/rechazar, decisiones, descartadas, comparar, selector de iteración, usuarios, umbrales, LLM y prompts. Se corrigieron tres desajustes (proyecto inexistente con base vacía, `requests_per_minute` vacío, contraseña 12–72). Falta repetirlo contra Mongo real y Docker. Los mocks se conservan para el modo demostración
 - [~] `gen:api` usa `openapi.snapshot.json` (o `OPENAPI_URL`); regenerar el snapshot si cambia el backend. `Decision` sigue a mano porque `/audit` no tiene `response_model`
 - [x] Prettier aplicado a `src/` (`npm run format`) y 19 pruebas con Vitest + Testing Library (`npm test`): cliente demo y permisos por rol, costo, componentes, Login y axe
 - [~] Accesibilidad: prueba automática con axe-core sobre Login (sin contraste ni layout, que jsdom no calcula). Faltan la revisión manual en móvil y con lector de pantalla
