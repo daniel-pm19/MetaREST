@@ -111,8 +111,6 @@ Los tests usan un `FakeLLMProvider`: nunca llaman al LLM real. Las convenciones 
 | Nestor David Lopez Castañeda | Plataforma backend, API demo e infraestructura |
 | Isaac David Burgos Cervantes | Frontend, MRs manuales, figuras y protocolo SUS |
 
-Profesor: Luis Daniel Benavides Navarro.
-
 ## Licencia
 
 [MIT](LICENSE)
