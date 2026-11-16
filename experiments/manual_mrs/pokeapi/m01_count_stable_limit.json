@@ -1,0 +1,31 @@
+{
+  "title": "El conteo no depende del límite",
+  "description": "count es el total del recurso, no de la página.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/pokemon/",
+    "query_params": {
+      "limit": 10,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 20,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equality",
+    "source_selector": "$.count"
+  },
+  "transformation_logic": "Se duplica limit.",
+  "expected_relation": "count(limit=10) == count(limit=20)",
+  "rationale": "Detecta conteos calculados sobre la página."
+}

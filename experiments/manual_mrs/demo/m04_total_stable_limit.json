@@ -1,0 +1,31 @@
+{
+  "title": "El total no depende del límite",
+  "description": "total cuenta las coincidencias antes de paginar.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "guitar",
+      "limit": 5
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 50,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equality",
+    "source_selector": "$.total"
+  },
+  "transformation_logic": "Se multiplica el límite por 10.",
+  "expected_relation": "total(limit=5) == total(limit=50)",
+  "rationale": "Detecta totales calculados sobre la página."
+}

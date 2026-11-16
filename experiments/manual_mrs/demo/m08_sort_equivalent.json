@@ -1,0 +1,32 @@
+{
+  "title": "Cambiar el orden conserva el conjunto",
+  "description": "Ordenar por precio o por id devuelve los mismos elementos si caben en una página.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "guitar",
+      "limit": 100,
+      "sort": "id_asc"
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "sort",
+          "value": "price_desc",
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equivalence",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "Se cambia sort a price_desc.",
+  "expected_relation": "multiset(sort=id_asc) == multiset(sort=price_desc)",
+  "rationale": "Detecta ordenaciones que pierden elementos."
+}

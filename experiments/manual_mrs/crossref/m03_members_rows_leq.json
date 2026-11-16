@@ -1,0 +1,31 @@
+{
+  "title": "rows limita el número de miembros",
+  "description": "rows=5 no devuelve más elementos que rows=10.",
+  "source": {
+    "method": "GET",
+    "path": "/members",
+    "query_params": {
+      "rows": 10
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "rows",
+          "value": 5,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "count_leq",
+    "source_selector": "$.message.items[*].id",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se reduce rows a la mitad.",
+  "expected_relation": "|items(5)| <= |items(10)|",
+  "rationale": "Detecta rows ignorado."
+}

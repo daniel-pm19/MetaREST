@@ -1,0 +1,21 @@
+{
+  "title": "Cambiar el orden no cambia el conjunto de resultados",
+  "description": "Ordenar ascendente o descendente por precio debe devolver los mismos elementos, solo en distinto orden, cuando todos caben en una página.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": { "q": "guitar", "sort": "price_asc", "limit": 100 }
+  },
+  "followups": [
+    {
+      "transformations": [{ "op": "set_param", "param": "sort", "value": "price_desc" }]
+    }
+  ],
+  "relation": {
+    "type": "equivalence",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "Se cambia sort de price_asc a price_desc.",
+  "expected_relation": "multiset(results(sort=asc)) == multiset(results(sort=desc))",
+  "rationale": "Detecta implementaciones de ordenamiento que pierden o duplican elementos, o que aplican filtros distintos según la dirección."
+}

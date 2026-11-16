@@ -1,0 +1,31 @@
+{
+  "title": "Filtrar por categoría reduce los resultados",
+  "description": "Añadir category se combina con q mediante AND, así que el resultado es un subconjunto.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "jazz",
+      "limit": 100
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "add_param",
+          "param": "category",
+          "value": "vinyl"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "subset",
+    "source_selector": "$.results[*].id",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se añade category=vinyl.",
+  "expected_relation": "ids(q,category) ⊆ ids(q)",
+  "rationale": "Detecta filtros combinados con OR."
+}

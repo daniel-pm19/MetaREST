@@ -1,0 +1,3828 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Crossref REST API",
+    "version": "4.9.1",
+    "description": "Welcome to the Crossref REST API. This page contains basic information about the API, including details about available endpoints and request parameters, and <a href=\"#try-it-out\">options to try requests yourself</a>. You can find additional information on [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/).\n\n## On this page\n\n- <a href=\"#request-parameters\">Request parameters</a>\n    - <a href=\"#filters\">Filters</a>\n    - <a href=\"#queries\">Queries</a>\n    - <a href=\"#cursors\">Retrieving large result sets</a>\n    - <a href=\"#select\">Selecting response fields</a>\n    - <a href=\"#facets\">Facets</a>\n    - <a href=\"#sort\">Sorting</a>\n- <a href=\"#response-types\">Response types</a>\n- <a href=\"#status\">Current status and errors</a>\n- <a href=\"#endpoints\">Endpoints</a>\n    - <a href=\"#works\">Works</a>\n    - <a href=\"#journals\">Journals</a>\n    - <a href=\"#funders\">Funders</a>\n    - <a href=\"#members\">Members</a>\n    - <a href=\"#prefixes\">Prefixes</a>\n    - <a href=\"#types\">Types</a>\n    - <a href=\"#licenses\">Licenses</a>\n\n## Request parameters<a name='request-parameters'></a>\n\nThe request parameters available for each endpoint are given below for each <a href=\"#endpoints\">endpoint</a>. Here we provide more details about parameters with specific functionality:\n\n### Filters<a name='filters'></a>\n\nFilters allow you to select items based on specific criteria and return a list. Multiple filters may be used in the same request. There are many filters available, especially for /works routes. They are described fully on [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/). For example:\n\n`/works?filter=from-created-date:2023-01-01T12:00:00,until-created-date:2023-01-01T13:00:00`\n\n### Queries<a name='queries'></a>\n\nSearch queries can be made to look for the presence of one or more words in any field. For example, \n\n`/members?query=association+library`\n\nSome queries look only in one or several fields. For example, \n\n`/works?query.bibliographic=Richard+Feynmann`\n\nonly incorporates fields used when referencing the content item (title, authors, volume, journal name, etc.).\n\n### Select response fields<a name='select'></a>\n\nFor works endpoints, if you only need a few elements from the schema use the `select` parameter. For example:\n\n`/works?select=DOI,prefix,title`\n\n### Retrieving large result sets<a name='cursors'></a>\n\nList requests return up to 1000 items in a single request. Paginating through multiple pages of results is possible using the `cursor` parameter. To retrieve multiple pages:\n\n1. Add `cursor=*` to a request (and `rows` > 0).\n1. The response will include a `next-cursor` value. \n1. Use `cursor=[next-cursor]` in your next request to obtain the following page of results. \n1. Stop sending requests when the number of items in the response is less than the number of `rows` requested. \n\nCursors expire after 5 minutes if not used.\n\nYou can also use `offset:n` for an integer `n` up to 10,000 to return results starting at the the nth record of the result set. We recommend using cursors rather than offset, since there are no page limitations and results are returned faster.\n\n### Facets<a name='facets'></a>\n\nFor works endpoints, retrieve summary statistics by providing a `facet` parameter along with the type of information, and maximum number of returned values which can be up to 1000. Use `*` to retrieve the maximum allowed number of values. The request format follows this example:\n\n`/works?facet=type-name:*`\n\nNote that facet counts are approximate and may differ from exact counts obtained using filters. Note that records with the same relationships two or more times are counted multiple times (e.g., records with two published corrections). \n\n### Sorting<a name='sort'></a>\n\nResults on the works endpoints can be sorted. `sort` sets the field by which results will be sorted. `order` sets the result ordering, either `asc` or `desc` (the default is `desc`). The following example sorts results by order of publication, beginning with the oldest:\n\n`/works?query=josiah+carberry&sort=published&order=asc`\n\n## Response types<a name='response-types'></a>\n\nResponses are in JSON format with the mime-type `application/vnd.crossref-api-message+json`. If you access the API via a browser, we recommend using a JSON formatter plugin. Other formats can be retrieved for singleton requests using [content negotiation](<a href='https://www.crossref.org/documentation/retrieve-metadata/content-negotiation/'>).\n\nThere are three types of responses:\n\n**Singleton**: The metadata record of a single object. Retrieving metadata for a specific identifier (e.g., DOI, ISSN, funder identifier) returns a singleton. For example: \n\n`https://api.crossref.org/works/10.5555%2F12345678`\n\n**Headers only**: Use an HTTP HEAD requests to quickly determine existence of a singleton without fetching any metadata. It returns headers and an HTTP status code (200=exists, 404=does not exist). For example (in a terminal):\n\n`curl --head \"https://api.crossref.org/members/98\"`\n\n**List**: Requests with queries or filters returns a list that can contain multiple content items. The maximum number of items returned is defined by the `rows` parameter, which can be set to 0 to retrieve only summary information. For example:\n\n`https://api.crossref.org/funders?rows=5`\n\n## Response codes<a name='response-codes'></a>\n\nWe ask that users monitor the HTTP response code for requests. We use standard codes: 200 for successful requests, 4XX for errors in the request, and 5XX for server-side errors. Some records redirect and will return a 301 response, see [changing or deleting DOIs](https://www.crossref.org/documentation/register-maintain-records/creating-and-managing-dois/changing-or-deleting-dois/). If you see a 429 or 403 response it means you have been temporarily or permanently blocked, in which case check the response text for details on how to proceed.\n\n## Current status and errors<a name='status'></a>\n\nThe current status of the API is available on our [status page](http://status.crossref.org) and social media feeds. If you see an issue that is not noted, please contact us via our [community forum](https://community.crossref.org/) or directly through our [support team](https://www.crossref.org/contact/). \n\n<a name='endpoints'></a>\n",
+    "contact": {
+      "name": "Crossref",
+      "email": "support@crossref.org",
+      "url": "https://crossref.org"
+    }
+  },
+  "produces": [
+    "application/json"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "tags": [
+    {
+      "name": "Works",
+      "description": "Endpoints that expose works related data<a name='works'></a>"
+    },
+    {
+      "name": "Journals",
+      "description": "Endpoints that expose journal related data<a name='journals'></a>"
+    },
+    {
+      "name": "Funders",
+      "description": "Endpoints that expose funder related data<a name='funders'></a>"
+    },
+    {
+      "name": "Members",
+      "description": "Endpoints that expose member related data<a name='members'></a>"
+    },
+    {
+      "name": "Prefixes",
+      "description": "Endpoints that expose prefix related data<a name='prefixes'></a>"
+    },
+    {
+      "name": "Types",
+      "description": "Endpoints that expose type related <a name='types'></a>"
+    },
+    {
+      "name": "Licenses",
+      "description": "Endpoints that expose license related data<a name='licenses'></a>"
+    },
+    {
+      "name": "Deposits",
+      "description": "Endpoints that expose deposit related data. *Note* **These endpoints will be deprecated in the near future.**"
+    }
+  ],
+  "paths": {
+    "/members/{id}/works": {
+      "get": {
+        "description": "Returns list of works associated with a Crossref member (deposited by a Crossref member) with {id}.\n\nIn addition to the `query` parameter, this endpoint supports the following <a href=\"#queries\">field queries</a>:\n\n + `query.affiliation` - query contributor affiliations\n + `query.author` - query author given and family names\n + `query.bibliographic` - query bibliographic information, useful for citation look up, includes titles, authors, ISSNs and publication years\n + `query.chair` - query chair given and family names\n + `query.container-title` - query container title aka. publication name\n + `query.contributor` - query author, editor, chair and translator given and family names\n + `query.degree` - query degree\n + `query.description` - query description\n + `query.editor` - query editor given and family names\n + `query.event-acronym` - query acronym of the event\n + `query.event-location` - query location of the event\n + `query.event-name` - query name of the event\n + `query.event-sponsor` - query sponsor of the event\n + `query.event-theme` - query theme of the event\n + `query.funder-name` - query name of the funder\n + `query.publisher-location` - query location of the publisher\n + `query.publisher-name` - query publisher name\n + `query.standards-body-acronym` - query acronym of the standards body\n + `query.standards-body-name` - query standards body name\n + `query.title` - query title\n + `query.translator` - query translator given and family names\n\n`sort`: <a href=\"#sort\">Sorting</a> by the following fields is supported:\n\n`citation` `created` `deposited` `indexed` `is-referenced-by-count` `issued` `published` `published-online` `published-print` `references-count` `relevance` `score` `updated` .\n\nNote that the following types of sorting cannot be combined with a `cursor`: `issued`, `published`, `published-print`, `published-online`.\n\n`facet`: This endpoint supports the following <a href=\"#facets\">facets</a>:\n\n + `affiliation` - author affiliation\n + `archive` - archive location\n + `assertion` - custom Crossmark assertion name\n + `assertion-group` - custom Crossmark assertion group name\n + `category-name` - category name of work\n + `container-title` - [max value 100], work container title, such as journal title, or book title\n + `funder-doi` - funder DOI\n + `funder-name` - funder name as deposited it appears in a metadata record\n + `issn` - [max value 100], journal ISSN (any - print, electronic, link)\n + `journal-issue` - journal issue number\n + `journal-volume` - journal volume\n + `license` - license URI of work\n + `link-application` - intended application of the full text link\n + `orcid` - [max value 100], contributor ORCID\n + `published` - earliest year of publication\n + `publisher-name` - publisher name of work\n + `relation-type` - relation type described by work or described by another work with work as object\n + `ror-id` - institution ROR ID\n + `source` - source of the DOI\n + `type-name` - work type name, such as journal-article or book-chapter\n + `update-type` - significant update type\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters.\n\n\n`select`: You can <a href=\"#select\">select</a> any of the following fields:\n\n`DOI` `ISBN` `ISSN` `URL` `abstract` `accepted` `alternative-id` `approved` `archive` `article-number` `assertion` `author` `chair` `clinical-trial-number` `container-title` `content-created` `content-domain` `contributor` `created` `degree` `deposited` `editor` `event` `funder` `group-title` `indexed` `is-referenced-by-count` `issn-type` `issue` `issued` `license` `link` `member` `original-title` `page` `posted` `prefix` `published` `published-online` `published-print` `publisher` `publisher-location` `reference` `references-count` `relation` `resource` `score` `short-container-title` `short-title` `standards-body` `subject` `subtitle` `title` `translator` `type` `update-policy` `update-to` `updated-by` `volume` ",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "Specify the order of sorted results, e.g. asc or desc (default).",
+            "required": false,
+            "pattern": "(asc|desc)",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "facet",
+            "description": "Retrieve counts for pre-defined facets e.g. `type-name:*` returns counts of all works by type. See <a href='#facets'>Facets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sample",
+            "description": "Retrieve `N` randomly sampled items",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort results by a certain field. See <a href='#sort'>Sorting</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "select",
+            "description": "Select certain fields, supports a comma separated list of fields. See <a href='#select'>Select response fields</a>",
+            "required": false,
+            "pattern": "^\\w+(,\\w+)*$",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorksMessage"
+            },
+            "description": "A list of works."
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/journals": {
+      "get": {
+        "description": "Return a list of journals in the Crossref database.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/JournalsMessage"
+            },
+            "description": "A list of journals."
+          }
+        },
+        "tags": [
+          "Journals"
+        ]
+      }
+    },
+    "/members/{id}": {
+      "get": {
+        "description": "Returns metadata for a Crossref member, as an example use id 324",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/MemberMessage"
+            },
+            "description": "The prefix data identified by {id}."
+          },
+          "404": {
+            "description": "The prefix data identified by {id} does not exist."
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/prefixes/{prefix}/works": {
+      "get": {
+        "description": "Returns list of works associated with specified {prefix}.\n\nIn addition to the `query` parameter, this endpoint supports the following <a href=\"#queries\">field queries</a>:\n\n + `query.affiliation` - query contributor affiliations\n + `query.author` - query author given and family names\n + `query.bibliographic` - query bibliographic information, useful for citation look up, includes titles, authors, ISSNs and publication years\n + `query.chair` - query chair given and family names\n + `query.container-title` - query container title aka. publication name\n + `query.contributor` - query author, editor, chair and translator given and family names\n + `query.degree` - query degree\n + `query.description` - query description\n + `query.editor` - query editor given and family names\n + `query.event-acronym` - query acronym of the event\n + `query.event-location` - query location of the event\n + `query.event-name` - query name of the event\n + `query.event-sponsor` - query sponsor of the event\n + `query.event-theme` - query theme of the event\n + `query.funder-name` - query name of the funder\n + `query.publisher-location` - query location of the publisher\n + `query.publisher-name` - query publisher name\n + `query.standards-body-acronym` - query acronym of the standards body\n + `query.standards-body-name` - query standards body name\n + `query.title` - query title\n + `query.translator` - query translator given and family names\n\n`sort`: <a href=\"#sort\">Sorting</a> by the following fields is supported:\n\n`citation` `created` `deposited` `indexed` `is-referenced-by-count` `issued` `published` `published-online` `published-print` `references-count` `relevance` `score` `updated` .\n\nNote that the following types of sorting cannot be combined with a `cursor`: `issued`, `published`, `published-print`, `published-online`.\n\n`facet`: This endpoint supports the following <a href=\"#facets\">facets</a>:\n\n + `affiliation` - author affiliation\n + `archive` - archive location\n + `assertion` - custom Crossmark assertion name\n + `assertion-group` - custom Crossmark assertion group name\n + `category-name` - category name of work\n + `container-title` - [max value 100], work container title, such as journal title, or book title\n + `funder-doi` - funder DOI\n + `funder-name` - funder name as deposited it appears in a metadata record\n + `issn` - [max value 100], journal ISSN (any - print, electronic, link)\n + `journal-issue` - journal issue number\n + `journal-volume` - journal volume\n + `license` - license URI of work\n + `link-application` - intended application of the full text link\n + `orcid` - [max value 100], contributor ORCID\n + `published` - earliest year of publication\n + `publisher-name` - publisher name of work\n + `relation-type` - relation type described by work or described by another work with work as object\n + `ror-id` - institution ROR ID\n + `source` - source of the DOI\n + `type-name` - work type name, such as journal-article or book-chapter\n + `update-type` - significant update type\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters.\n\n\n`select`: You can <a href=\"#select\">select</a> any of the following fields:\n\n`DOI` `ISBN` `ISSN` `URL` `abstract` `accepted` `alternative-id` `approved` `archive` `article-number` `assertion` `author` `chair` `clinical-trial-number` `container-title` `content-created` `content-domain` `contributor` `created` `degree` `deposited` `editor` `event` `funder` `group-title` `indexed` `is-referenced-by-count` `issn-type` `issue` `issued` `license` `link` `member` `original-title` `page` `posted` `prefix` `published` `published-online` `published-print` `publisher` `publisher-location` `reference` `references-count` `relation` `resource` `score` `short-container-title` `short-title` `standards-body` `subject` `subtitle` `title` `translator` `type` `update-policy` `update-to` `updated-by` `volume` ",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "Specify the order of sorted results, e.g. asc or desc (default).",
+            "required": false,
+            "pattern": "(asc|desc)",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "facet",
+            "description": "Retrieve counts for pre-defined facets e.g. `type-name:*` returns counts of all works by type. See <a href='#facets'>Facets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sample",
+            "description": "Retrieve `N` randomly sampled items",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort results by a certain field. See <a href='#sort'>Sorting</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "select",
+            "description": "Select certain fields, supports a comma separated list of fields. See <a href='#select'>Select response fields</a>",
+            "required": false,
+            "pattern": "^\\w+(,\\w+)*$",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "prefix",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorksMessage"
+            },
+            "description": "A list of works."
+          }
+        },
+        "tags": [
+          "Prefixes"
+        ]
+      }
+    },
+    "/funders/{id}/works": {
+      "get": {
+        "description": "Returns list of works associated with the specified {id}.\n\nIn addition to the `query` parameter, this endpoint supports the following <a href=\"#queries\">field queries</a>:\n\n + `query.affiliation` - query contributor affiliations\n + `query.author` - query author given and family names\n + `query.bibliographic` - query bibliographic information, useful for citation look up, includes titles, authors, ISSNs and publication years\n + `query.chair` - query chair given and family names\n + `query.container-title` - query container title aka. publication name\n + `query.contributor` - query author, editor, chair and translator given and family names\n + `query.degree` - query degree\n + `query.description` - query description\n + `query.editor` - query editor given and family names\n + `query.event-acronym` - query acronym of the event\n + `query.event-location` - query location of the event\n + `query.event-name` - query name of the event\n + `query.event-sponsor` - query sponsor of the event\n + `query.event-theme` - query theme of the event\n + `query.funder-name` - query name of the funder\n + `query.publisher-location` - query location of the publisher\n + `query.publisher-name` - query publisher name\n + `query.standards-body-acronym` - query acronym of the standards body\n + `query.standards-body-name` - query standards body name\n + `query.title` - query title\n + `query.translator` - query translator given and family names\n\n`sort`: <a href=\"#sort\">Sorting</a> by the following fields is supported:\n\n`citation` `created` `deposited` `indexed` `is-referenced-by-count` `issued` `published` `published-online` `published-print` `references-count` `relevance` `score` `updated` .\n\nNote that the following types of sorting cannot be combined with a `cursor`: `issued`, `published`, `published-print`, `published-online`.\n\n`facet`: This endpoint supports the following <a href=\"#facets\">facets</a>:\n\n + `affiliation` - author affiliation\n + `archive` - archive location\n + `assertion` - custom Crossmark assertion name\n + `assertion-group` - custom Crossmark assertion group name\n + `category-name` - category name of work\n + `container-title` - [max value 100], work container title, such as journal title, or book title\n + `funder-doi` - funder DOI\n + `funder-name` - funder name as deposited it appears in a metadata record\n + `issn` - [max value 100], journal ISSN (any - print, electronic, link)\n + `journal-issue` - journal issue number\n + `journal-volume` - journal volume\n + `license` - license URI of work\n + `link-application` - intended application of the full text link\n + `orcid` - [max value 100], contributor ORCID\n + `published` - earliest year of publication\n + `publisher-name` - publisher name of work\n + `relation-type` - relation type described by work or described by another work with work as object\n + `ror-id` - institution ROR ID\n + `source` - source of the DOI\n + `type-name` - work type name, such as journal-article or book-chapter\n + `update-type` - significant update type\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters.\n\n\n`select`: You can <a href=\"#select\">select</a> any of the following fields:\n\n`DOI` `ISBN` `ISSN` `URL` `abstract` `accepted` `alternative-id` `approved` `archive` `article-number` `assertion` `author` `chair` `clinical-trial-number` `container-title` `content-created` `content-domain` `contributor` `created` `degree` `deposited` `editor` `event` `funder` `group-title` `indexed` `is-referenced-by-count` `issn-type` `issue` `issued` `license` `link` `member` `original-title` `page` `posted` `prefix` `published` `published-online` `published-print` `publisher` `publisher-location` `reference` `references-count` `relation` `resource` `score` `short-container-title` `short-title` `standards-body` `subject` `subtitle` `title` `translator` `type` `update-policy` `update-to` `updated-by` `volume` ",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "Specify the order of sorted results, e.g. asc or desc (default).",
+            "required": false,
+            "pattern": "(asc|desc)",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "facet",
+            "description": "Retrieve counts for pre-defined facets e.g. `type-name:*` returns counts of all works by type. See <a href='#facets'>Facets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sample",
+            "description": "Retrieve `N` randomly sampled items",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort results by a certain field. See <a href='#sort'>Sorting</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "select",
+            "description": "Select certain fields, supports a comma separated list of fields. See <a href='#select'>Select response fields</a>",
+            "required": false,
+            "pattern": "^\\w+(,\\w+)*$",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The id of the funder",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorksMessage"
+            },
+            "description": "A list of works."
+          }
+        },
+        "tags": [
+          "Funders"
+        ]
+      }
+    },
+    "/journals/{issn}": {
+      "get": {
+        "description": "Returns information about a journal with the given ISSN, as an example use ISSN 03064530",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "issn",
+            "description": "The ISSN identifier associated with the journal",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/JournalMessage"
+            },
+            "description": "The journal identified by {issn}."
+          },
+          "404": {
+            "description": "The journal identified by {issn} does not exist."
+          }
+        },
+        "tags": [
+          "Journals"
+        ]
+      }
+    },
+    "/types/{id}": {
+      "get": {
+        "description": "Returns information about a metadata work type.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/TypeMessage"
+            },
+            "description": "The type identified by {id}."
+          },
+          "404": {
+            "description": "The type identified by {id} does not exist."
+          }
+        },
+        "tags": [
+          "Types"
+        ]
+      }
+    },
+    "/licenses": {
+      "get": {
+        "description": "Returns a list of licenses.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/LicensesMessage"
+            },
+            "description": "A list of licenses."
+          }
+        },
+        "tags": [
+          "Licenses"
+        ]
+      }
+    },
+    "/types": {
+      "get": {
+        "description": "Returns a list of valid work types.",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/TypesMessage"
+            },
+            "description": "A collection of types."
+          }
+        },
+        "tags": [
+          "Types"
+        ]
+      }
+    },
+    "/works/{doi}": {
+      "get": {
+        "description": "Returns metadata for the specified Crossref DOI, as an example use DOI 10.5555/12345678",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "doi",
+            "description": "The DOI identifier of the content item.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorkMessage"
+            },
+            "description": "The work identified by {doi}."
+          },
+          "404": {
+            "description": "The work identified by {doi} does not exist."
+          }
+        },
+        "tags": [
+          "Works"
+        ]
+      }
+    },
+    "/types/{id}/works": {
+      "get": {
+        "description": "Returns list of works of type {id}.\n\nIn addition to the `query` parameter, this endpoint supports the following <a href=\"#queries\">field queries</a>:\n\n + `query.affiliation` - query contributor affiliations\n + `query.author` - query author given and family names\n + `query.bibliographic` - query bibliographic information, useful for citation look up, includes titles, authors, ISSNs and publication years\n + `query.chair` - query chair given and family names\n + `query.container-title` - query container title aka. publication name\n + `query.contributor` - query author, editor, chair and translator given and family names\n + `query.degree` - query degree\n + `query.description` - query description\n + `query.editor` - query editor given and family names\n + `query.event-acronym` - query acronym of the event\n + `query.event-location` - query location of the event\n + `query.event-name` - query name of the event\n + `query.event-sponsor` - query sponsor of the event\n + `query.event-theme` - query theme of the event\n + `query.funder-name` - query name of the funder\n + `query.publisher-location` - query location of the publisher\n + `query.publisher-name` - query publisher name\n + `query.standards-body-acronym` - query acronym of the standards body\n + `query.standards-body-name` - query standards body name\n + `query.title` - query title\n + `query.translator` - query translator given and family names\n\n`sort`: <a href=\"#sort\">Sorting</a> by the following fields is supported:\n\n`citation` `created` `deposited` `indexed` `is-referenced-by-count` `issued` `published` `published-online` `published-print` `references-count` `relevance` `score` `updated` .\n\nNote that the following types of sorting cannot be combined with a `cursor`: `issued`, `published`, `published-print`, `published-online`.\n\n`facet`: This endpoint supports the following <a href=\"#facets\">facets</a>:\n\n + `affiliation` - author affiliation\n + `archive` - archive location\n + `assertion` - custom Crossmark assertion name\n + `assertion-group` - custom Crossmark assertion group name\n + `category-name` - category name of work\n + `container-title` - [max value 100], work container title, such as journal title, or book title\n + `funder-doi` - funder DOI\n + `funder-name` - funder name as deposited it appears in a metadata record\n + `issn` - [max value 100], journal ISSN (any - print, electronic, link)\n + `journal-issue` - journal issue number\n + `journal-volume` - journal volume\n + `license` - license URI of work\n + `link-application` - intended application of the full text link\n + `orcid` - [max value 100], contributor ORCID\n + `published` - earliest year of publication\n + `publisher-name` - publisher name of work\n + `relation-type` - relation type described by work or described by another work with work as object\n + `ror-id` - institution ROR ID\n + `source` - source of the DOI\n + `type-name` - work type name, such as journal-article or book-chapter\n + `update-type` - significant update type\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters.\n\n\n`select`: You can <a href=\"#select\">select</a> any of the following fields:\n\n`DOI` `ISBN` `ISSN` `URL` `abstract` `accepted` `alternative-id` `approved` `archive` `article-number` `assertion` `author` `chair` `clinical-trial-number` `container-title` `content-created` `content-domain` `contributor` `created` `degree` `deposited` `editor` `event` `funder` `group-title` `indexed` `is-referenced-by-count` `issn-type` `issue` `issued` `license` `link` `member` `original-title` `page` `posted` `prefix` `published` `published-online` `published-print` `publisher` `publisher-location` `reference` `references-count` `relation` `resource` `score` `short-container-title` `short-title` `standards-body` `subject` `subtitle` `title` `translator` `type` `update-policy` `update-to` `updated-by` `volume` ",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "Specify the order of sorted results, e.g. asc or desc (default).",
+            "required": false,
+            "pattern": "(asc|desc)",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "facet",
+            "description": "Retrieve counts for pre-defined facets e.g. `type-name:*` returns counts of all works by type. See <a href='#facets'>Facets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sample",
+            "description": "Retrieve `N` randomly sampled items",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort results by a certain field. See <a href='#sort'>Sorting</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "select",
+            "description": "Select certain fields, supports a comma separated list of fields. See <a href='#select'>Select response fields</a>",
+            "required": false,
+            "pattern": "^\\w+(,\\w+)*$",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "id",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorksMessage"
+            },
+            "description": "A list of works."
+          }
+        },
+        "tags": [
+          "Types"
+        ]
+      }
+    },
+    "/works": {
+      "get": {
+        "description": "Returns a list of all works (journal articles, conference proceedings, books, components, etc), 20 per page by default.\n\nIn addition to the `query` parameter, this endpoint supports the following <a href=\"#queries\">field queries</a>:\n\n + `query.affiliation` - query contributor affiliations\n + `query.author` - query author given and family names\n + `query.bibliographic` - query bibliographic information, useful for citation look up, includes titles, authors, ISSNs and publication years\n + `query.chair` - query chair given and family names\n + `query.container-title` - query container title aka. publication name\n + `query.contributor` - query author, editor, chair and translator given and family names\n + `query.degree` - query degree\n + `query.description` - query description\n + `query.editor` - query editor given and family names\n + `query.event-acronym` - query acronym of the event\n + `query.event-location` - query location of the event\n + `query.event-name` - query name of the event\n + `query.event-sponsor` - query sponsor of the event\n + `query.event-theme` - query theme of the event\n + `query.funder-name` - query name of the funder\n + `query.publisher-location` - query location of the publisher\n + `query.publisher-name` - query publisher name\n + `query.standards-body-acronym` - query acronym of the standards body\n + `query.standards-body-name` - query standards body name\n + `query.title` - query title\n + `query.translator` - query translator given and family names\n\n`sort`: <a href=\"#sort\">Sorting</a> by the following fields is supported:\n\n`citation` `created` `deposited` `indexed` `is-referenced-by-count` `issued` `published` `published-online` `published-print` `references-count` `relevance` `score` `updated` .\n\nNote that the following types of sorting cannot be combined with a `cursor`: `issued`, `published`, `published-print`, `published-online`.\n\n`facet`: This endpoint supports the following <a href=\"#facets\">facets</a>:\n\n + `affiliation` - author affiliation\n + `archive` - archive location\n + `assertion` - custom Crossmark assertion name\n + `assertion-group` - custom Crossmark assertion group name\n + `category-name` - category name of work\n + `container-title` - [max value 100], work container title, such as journal title, or book title\n + `funder-doi` - funder DOI\n + `funder-name` - funder name as deposited it appears in a metadata record\n + `issn` - [max value 100], journal ISSN (any - print, electronic, link)\n + `journal-issue` - journal issue number\n + `journal-volume` - journal volume\n + `license` - license URI of work\n + `link-application` - intended application of the full text link\n + `orcid` - [max value 100], contributor ORCID\n + `published` - earliest year of publication\n + `publisher-name` - publisher name of work\n + `relation-type` - relation type described by work or described by another work with work as object\n + `ror-id` - institution ROR ID\n + `source` - source of the DOI\n + `type-name` - work type name, such as journal-article or book-chapter\n + `update-type` - significant update type\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters.\n\n\n`select`: You can <a href=\"#select\">select</a> any of the following fields:\n\n`DOI` `ISBN` `ISSN` `URL` `abstract` `accepted` `alternative-id` `approved` `archive` `article-number` `assertion` `author` `chair` `clinical-trial-number` `container-title` `content-created` `content-domain` `contributor` `created` `degree` `deposited` `editor` `event` `funder` `group-title` `indexed` `is-referenced-by-count` `issn-type` `issue` `issued` `license` `link` `member` `original-title` `page` `posted` `prefix` `published` `published-online` `published-print` `publisher` `publisher-location` `reference` `references-count` `relation` `resource` `score` `short-container-title` `short-title` `standards-body` `subject` `subtitle` `title` `translator` `type` `update-policy` `update-to` `updated-by` `volume` ",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "Specify the order of sorted results, e.g. asc or desc (default).",
+            "required": false,
+            "pattern": "(asc|desc)",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "facet",
+            "description": "Retrieve counts for pre-defined facets e.g. `type-name:*` returns counts of all works by type. See <a href='#facets'>Facets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sample",
+            "description": "Retrieve `N` randomly sampled items",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort results by a certain field. See <a href='#sort'>Sorting</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "select",
+            "description": "Select certain fields, supports a comma separated list of fields. See <a href='#select'>Select response fields</a>",
+            "required": false,
+            "pattern": "^\\w+(,\\w+)*$",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorksMessage"
+            },
+            "description": "A list of works"
+          }
+        },
+        "tags": [
+          "Works"
+        ]
+      }
+    },
+    "/works/{doi}/agency": {
+      "get": {
+        "description": "Gets the agency associated with a specific work by its DOI, as an example use DOI 10.5555/12345678",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "doi",
+            "description": "The DOI identifier of the content item.",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/AgencyMessage"
+            },
+            "description": "The agency associated with work identified by {doi}."
+          },
+          "404": {
+            "description": "The work identified by {doi} does not exist."
+          }
+        },
+        "tags": [
+          "Works"
+        ]
+      }
+    },
+    "/members": {
+      "get": {
+        "description": "Returns a list of organisations that have registered content with Crossref.\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters. This endpoint supports the following filters:\n\n + `backfile-doi-count` - members with given count of DOIs for material published more than two years ago\n + `current-doi-count` - members with given count of DOIs for material published within last two years\n + `prefix` - members with given prefix",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/MembersMessage"
+            },
+            "description": "A list of members."
+          }
+        },
+        "tags": [
+          "Members"
+        ]
+      }
+    },
+    "/journals/{issn}/works": {
+      "get": {
+        "description": "Returns a list of works in the journal identified by {issn}.\n\nIn addition to the `query` parameter, this endpoint supports the following <a href=\"#queries\">field queries</a>:\n\n + `query.affiliation` - query contributor affiliations\n + `query.author` - query author given and family names\n + `query.bibliographic` - query bibliographic information, useful for citation look up, includes titles, authors, ISSNs and publication years\n + `query.chair` - query chair given and family names\n + `query.container-title` - query container title aka. publication name\n + `query.contributor` - query author, editor, chair and translator given and family names\n + `query.degree` - query degree\n + `query.description` - query description\n + `query.editor` - query editor given and family names\n + `query.event-acronym` - query acronym of the event\n + `query.event-location` - query location of the event\n + `query.event-name` - query name of the event\n + `query.event-sponsor` - query sponsor of the event\n + `query.event-theme` - query theme of the event\n + `query.funder-name` - query name of the funder\n + `query.publisher-location` - query location of the publisher\n + `query.publisher-name` - query publisher name\n + `query.standards-body-acronym` - query acronym of the standards body\n + `query.standards-body-name` - query standards body name\n + `query.title` - query title\n + `query.translator` - query translator given and family names\n\n`sort`: <a href=\"#sort\">Sorting</a> by the following fields is supported:\n\n`citation` `created` `deposited` `indexed` `is-referenced-by-count` `issued` `published` `published-online` `published-print` `references-count` `relevance` `score` `updated` .\n\nNote that the following types of sorting cannot be combined with a `cursor`: `issued`, `published`, `published-print`, `published-online`.\n\n`facet`: This endpoint supports the following <a href=\"#facets\">facets</a>:\n\n + `affiliation` - author affiliation\n + `archive` - archive location\n + `assertion` - custom Crossmark assertion name\n + `assertion-group` - custom Crossmark assertion group name\n + `category-name` - category name of work\n + `container-title` - [max value 100], work container title, such as journal title, or book title\n + `funder-doi` - funder DOI\n + `funder-name` - funder name as deposited it appears in a metadata record\n + `issn` - [max value 100], journal ISSN (any - print, electronic, link)\n + `journal-issue` - journal issue number\n + `journal-volume` - journal volume\n + `license` - license URI of work\n + `link-application` - intended application of the full text link\n + `orcid` - [max value 100], contributor ORCID\n + `published` - earliest year of publication\n + `publisher-name` - publisher name of work\n + `relation-type` - relation type described by work or described by another work with work as object\n + `ror-id` - institution ROR ID\n + `source` - source of the DOI\n + `type-name` - work type name, such as journal-article or book-chapter\n + `update-type` - significant update type\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters.\n\n\n`select`: You can <a href=\"#select\">select</a> any of the following fields:\n\n`DOI` `ISBN` `ISSN` `URL` `abstract` `accepted` `alternative-id` `approved` `archive` `article-number` `assertion` `author` `chair` `clinical-trial-number` `container-title` `content-created` `content-domain` `contributor` `created` `degree` `deposited` `editor` `event` `funder` `group-title` `indexed` `is-referenced-by-count` `issn-type` `issue` `issued` `license` `link` `member` `original-title` `page` `posted` `prefix` `published` `published-online` `published-print` `publisher` `publisher-location` `reference` `references-count` `relation` `resource` `score` `short-container-title` `short-title` `standards-body` `subject` `subtitle` `title` `translator` `type` `update-policy` `update-to` `updated-by` `volume` ",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "description": "Specify the order of sorted results, e.g. asc or desc (default).",
+            "required": false,
+            "pattern": "(asc|desc)",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "facet",
+            "description": "Retrieve counts for pre-defined facets e.g. `type-name:*` returns counts of all works by type. See <a href='#facets'>Facets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "sample",
+            "description": "Retrieve `N` randomly sampled items",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "description": "Sort results by a certain field. See <a href='#sort'>Sorting</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "select",
+            "description": "Select certain fields, supports a comma separated list of fields. See <a href='#select'>Select response fields</a>",
+            "required": false,
+            "pattern": "^\\w+(,\\w+)*$",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Filter by certain fields. See <a href='#filters'>filters</a>",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "path",
+            "name": "issn",
+            "description": "The ISSN identifier associated with the journal",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/WorksMessage"
+            },
+            "description": "A list of works."
+          }
+        },
+        "tags": [
+          "Journals"
+        ]
+      }
+    },
+    "/funders/{id}": {
+      "get": {
+        "description": "Returns metadata for specified funder **and** its suborganizations, as an example use id 501100006004",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "The id of the funder",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/FunderMessage"
+            },
+            "description": "The funder identified by {id}."
+          },
+          "404": {
+            "description": "The funder identified by {id} does not exist."
+          }
+        },
+        "tags": [
+          "Funders"
+        ]
+      }
+    },
+    "/funders": {
+      "get": {
+        "description": "Returns a list of all funders in the [Funder Registry](https://gitlab.com/crossref/open_funder_registry).\n\n`filter`: See [our documentation website](https://www.crossref.org/documentation/retrieve-metadata/rest-api/rest-api-filters/) for a full list of available filters. This endpoint supports the following filters:\n\n + `location` - funders located in given country",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "filter",
+            "description": "Search funders by location using a Lucene based syntax. See <a href='#filters'>Filters</a>",
+            "required": false,
+            "pattern": "location:.*",
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "description": "Page through large result sets. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "description": "Query certain fields. See <a href='#queries'>Queries</a>.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "in": "query",
+            "name": "rows",
+            "description": "The number of rows per page of results",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "The number of rows to skip before returning. See <a href='#cursors'>Retrieving large results sets</a>.",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/FundersMessage"
+            },
+            "description": "A list of funders."
+          }
+        },
+        "tags": [
+          "Funders"
+        ]
+      }
+    },
+    "/prefixes/{prefix}": {
+      "get": {
+        "description": "Returns metadata for the DOI owner prefix, as an example use prefix 10.1016",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "prefix",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "schema": {
+              "$ref": "#/definitions/PrefixMessage"
+            },
+            "description": "The prefix data identified by {prefix}."
+          },
+          "404": {
+            "description": "The prefix data identified by {prefix} does not exist."
+          }
+        },
+        "tags": [
+          "Prefixes"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "Affiliation": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "place": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "department": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "acronym": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AffiliationIdentifier"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "AffiliationIdentifier": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "id-type": {
+          "type": "string"
+        },
+        "asserted-by": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "id-type",
+        "asserted-by"
+      ]
+    },
+    "Agency": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label"
+      ]
+    },
+    "AgencyMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "work-agency"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/DoiAgency"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "Author": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContributorRole"
+          }
+        },
+        "ORCID": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "given": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "affiliation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Affiliation"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "authenticated-orcid": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "affiliation",
+        "sequence"
+      ]
+    },
+    "AwardAmount": {
+      "type": "object",
+      "properties": {
+        "amount": {
+          "type": "number",
+          "format": "double"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "percentage": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "amount"
+      ]
+    },
+    "BreakdownsObject": {
+      "type": "object",
+      "properties": {
+        "dois-by-issued-year": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "dois-by-issued-year"
+      ]
+    },
+    "ContributorRole": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "vocabulary": {
+          "description": "[crossref, credit]",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "vocabulary"
+      ]
+    },
+    "Coverage": {
+      "type": "object",
+      "properties": {
+        "last-status-check-time": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "affiliations": {
+          "type": "number",
+          "format": "double"
+        },
+        "abstracts": {
+          "type": "number",
+          "format": "double"
+        },
+        "orcids": {
+          "type": "number",
+          "format": "double"
+        },
+        "licenses": {
+          "type": "number",
+          "format": "double"
+        },
+        "references": {
+          "type": "number",
+          "format": "double"
+        },
+        "funders": {
+          "type": "number",
+          "format": "double"
+        },
+        "similarity-checking": {
+          "type": "number",
+          "format": "double"
+        },
+        "award-numbers": {
+          "type": "number",
+          "format": "double"
+        },
+        "ror-ids": {
+          "type": "number",
+          "format": "double"
+        },
+        "update-policies": {
+          "type": "number",
+          "format": "double"
+        },
+        "resource-links": {
+          "type": "number",
+          "format": "double"
+        },
+        "descriptions": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "last-status-check-time",
+        "affiliations",
+        "abstracts",
+        "orcids",
+        "licenses",
+        "references",
+        "funders",
+        "similarity-checking",
+        "award-numbers",
+        "ror-ids",
+        "update-policies",
+        "resource-links",
+        "descriptions"
+      ]
+    },
+    "CoverageFull": {
+      "type": "object",
+      "properties": {
+        "affiliations-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "similarity-checking-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "descriptions-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "ror-ids-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "references-backfie": {
+          "type": "number",
+          "format": "double"
+        },
+        "funders-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "licenses-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "funders-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "affiliations-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "resource-links-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "orcids-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "update-policies-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "ror-ids-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "orcids-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "similarity-checking-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "descriptions-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "award-numbers-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "update-policies-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "licenses-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "award-numbers-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "abstracts-backfile": {
+          "type": "number",
+          "format": "double"
+        },
+        "resource-links-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "abstracts-current": {
+          "type": "number",
+          "format": "double"
+        },
+        "references-current": {
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "affiliations-current",
+        "similarity-checking-current",
+        "descriptions-current",
+        "ror-ids-current",
+        "references-backfie",
+        "funders-backfile",
+        "licenses-backfile",
+        "funders-current",
+        "affiliations-backfile",
+        "resource-links-backfile",
+        "orcids-backfile",
+        "update-policies-current",
+        "ror-ids-backfile",
+        "orcids-current",
+        "similarity-checking-backfile",
+        "descriptions-backfile",
+        "award-numbers-backfile",
+        "update-policies-backfile",
+        "licenses-current",
+        "award-numbers-current",
+        "abstracts-backfile",
+        "resource-links-current",
+        "abstracts-current",
+        "references-current"
+      ]
+    },
+    "CoverageObject": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/Coverage"
+      }
+    },
+    "CoverageTypeObject": {
+      "type": "object",
+      "properties": {
+        "all": {
+          "$ref": "#/definitions/CoverageObject"
+        },
+        "current": {
+          "$ref": "#/definitions/CoverageObject"
+        },
+        "backfile": {
+          "$ref": "#/definitions/CoverageObject"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "all",
+        "current",
+        "backfile"
+      ]
+    },
+    "Date": {
+      "type": "object",
+      "properties": {
+        "date-parts": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "date-time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "timestamp": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "date-parts",
+        "date-time",
+        "timestamp"
+      ]
+    },
+    "DateAndVersion": {
+      "type": "object",
+      "properties": {
+        "date-parts": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "date-parts",
+        "version"
+      ]
+    },
+    "DateParts": {
+      "type": "object",
+      "properties": {
+        "date-parts": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "x-oneOf": [
+                {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                null
+              ]
+            }
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "date-parts"
+      ]
+    },
+    "DoiAgency": {
+      "type": "object",
+      "properties": {
+        "DOI": {
+          "description": "The DOI identifier of the content item.",
+          "type": "string"
+        },
+        "agency": {
+          "$ref": "#/definitions/Agency"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "DOI",
+        "agency"
+      ]
+    },
+    "DoiCounts": {
+      "type": "object",
+      "properties": {
+        "total-dois": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "current-dois": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "backfile-dois": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "total-dois",
+        "current-dois",
+        "backfile-dois"
+      ]
+    },
+    "Flags": {
+      "type": "object",
+      "properties": {
+        "deposits-abstracts-current": {
+          "type": "boolean"
+        },
+        "deposits-orcids-current": {
+          "type": "boolean"
+        },
+        "deposits": {
+          "type": "boolean"
+        },
+        "deposits-affiliations-backfile": {
+          "type": "boolean"
+        },
+        "deposits-update-policies-backfile": {
+          "type": "boolean"
+        },
+        "deposits-award-numbers-current": {
+          "type": "boolean"
+        },
+        "deposits-resource-links-current": {
+          "type": "boolean"
+        },
+        "deposits-ror-ids-current": {
+          "type": "boolean"
+        },
+        "deposits-articles": {
+          "type": "boolean"
+        },
+        "deposits-affiliations-current": {
+          "type": "boolean"
+        },
+        "deposits-funders-current": {
+          "type": "boolean"
+        },
+        "deposits-references-backfile": {
+          "type": "boolean"
+        },
+        "deposits-ror-ids-backfile": {
+          "type": "boolean"
+        },
+        "deposits-abstracts-backfile": {
+          "type": "boolean"
+        },
+        "deposits-licenses-backfile": {
+          "type": "boolean"
+        },
+        "deposits-award-numbers-backfile": {
+          "type": "boolean"
+        },
+        "deposits-descriptions-current": {
+          "type": "boolean"
+        },
+        "deposits-references-current": {
+          "type": "boolean"
+        },
+        "deposits-resource-links-backfile": {
+          "type": "boolean"
+        },
+        "deposits-descriptions-backfile": {
+          "type": "boolean"
+        },
+        "deposits-orcids-backfile": {
+          "type": "boolean"
+        },
+        "deposits-funders-backfile": {
+          "type": "boolean"
+        },
+        "deposits-update-policies-current": {
+          "type": "boolean"
+        },
+        "deposits-licenses-current": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "deposits-abstracts-current",
+        "deposits-orcids-current",
+        "deposits",
+        "deposits-affiliations-backfile",
+        "deposits-update-policies-backfile",
+        "deposits-award-numbers-current",
+        "deposits-resource-links-current",
+        "deposits-ror-ids-current",
+        "deposits-articles",
+        "deposits-affiliations-current",
+        "deposits-funders-current",
+        "deposits-references-backfile",
+        "deposits-ror-ids-backfile",
+        "deposits-abstracts-backfile",
+        "deposits-licenses-backfile",
+        "deposits-award-numbers-backfile",
+        "deposits-descriptions-current",
+        "deposits-references-current",
+        "deposits-resource-links-backfile",
+        "deposits-descriptions-backfile",
+        "deposits-orcids-backfile",
+        "deposits-funders-backfile",
+        "deposits-update-policies-current",
+        "deposits-licenses-current"
+      ]
+    },
+    "Funder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "The id of the funder",
+          "type": "string"
+        },
+        "location": {
+          "description": "The geographic location of the funder",
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "alt-names": {
+          "description": "Other names this funder may be identified with",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uri": {
+          "type": "string"
+        },
+        "replaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "replaced-by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "location",
+        "name",
+        "alt-names",
+        "uri",
+        "replaces",
+        "replaced-by",
+        "tokens"
+      ]
+    },
+    "FunderFull": {
+      "type": "object",
+      "properties": {
+        "hierarchy-names": {
+          "$ref": "#/definitions/HierarchyNamesObject"
+        },
+        "replaced-by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "work-count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "descendants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "descendant-work-count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "id": {
+          "description": "The id of the funder",
+          "type": "string"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "replaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "uri": {
+          "type": "string"
+        },
+        "hierarchy": {
+          "$ref": "#/definitions/FunderHierarchy"
+        },
+        "alt-names": {
+          "description": "Other names this funder may be identified with",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "location": {
+          "description": "The geographic location of the funder",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "hierarchy-names",
+        "replaced-by",
+        "work-count",
+        "name",
+        "descendants",
+        "descendant-work-count",
+        "id",
+        "tokens",
+        "replaces",
+        "uri",
+        "hierarchy",
+        "alt-names",
+        "location"
+      ]
+    },
+    "FunderHierarchy": {
+      "type": "object",
+      "properties": {
+        "more": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "FunderIdentifier": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "id-type": {
+          "type": "string"
+        },
+        "asserted-by": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "id-type",
+        "asserted-by"
+      ]
+    },
+    "FunderMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "funder"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/FunderFull"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "Funders": {
+      "type": "object",
+      "properties": {
+        "items-per-page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "query": {
+          "$ref": "#/definitions/Query"
+        },
+        "total-results": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Funder"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items-per-page",
+        "query",
+        "total-results",
+        "items"
+      ]
+    },
+    "FundersMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "funder-list"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Funders"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "Funding": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "scheme": {
+          "type": "string"
+        },
+        "award-amount": {
+          "$ref": "#/definitions/AwardAmount"
+        },
+        "funder": {
+          "$ref": "#/definitions/WorkFunder"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "funder"
+      ]
+    },
+    "HierarchyNamesObject": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "Investigator": {
+      "type": "object",
+      "properties": {
+        "ORCID": {
+          "type": "string"
+        },
+        "suffix": {
+          "type": "string"
+        },
+        "given": {
+          "type": "string"
+        },
+        "family": {
+          "type": "string"
+        },
+        "affiliation": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/InvestigatorAffiliation"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "role-start": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "authenticated-orcid": {
+          "type": "boolean"
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "alternate-name": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string"
+        },
+        "role-end": {
+          "$ref": "#/definitions/DateParts"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "affiliation"
+      ]
+    },
+    "InvestigatorAffiliation": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AffiliationIdentifier"
+          }
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "Journal": {
+      "type": "object",
+      "properties": {
+        "last-status-check-time": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "counts": {
+          "$ref": "#/definitions/DoiCounts"
+        },
+        "breakdowns": {
+          "$ref": "#/definitions/BreakdownsObject"
+        },
+        "publisher": {
+          "description": "The publisher of the journal",
+          "type": "string"
+        },
+        "coverage": {
+          "$ref": "#/definitions/CoverageFull"
+        },
+        "title": {
+          "description": "The title of the journal",
+          "type": "string"
+        },
+        "subjects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coverage-type": {
+          "$ref": "#/definitions/CoverageTypeObject"
+        },
+        "flags": {
+          "$ref": "#/definitions/Flags"
+        },
+        "ISSN": {
+          "description": "The ISSN identifier associated with the journal",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issn-type": {
+          "$ref": "#/definitions/JournalIssnType"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "last-status-check-time",
+        "counts",
+        "breakdowns",
+        "publisher",
+        "coverage",
+        "title",
+        "subjects",
+        "coverage-type",
+        "flags",
+        "ISSN",
+        "issn-type"
+      ]
+    },
+    "JournalIssnType": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value",
+        "type"
+      ]
+    },
+    "JournalMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "journal"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Journal"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "Journals": {
+      "type": "object",
+      "properties": {
+        "items-per-page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "query": {
+          "$ref": "#/definitions/Query"
+        },
+        "total-results": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Journal"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items-per-page",
+        "query",
+        "total-results",
+        "items"
+      ]
+    },
+    "JournalsMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "journal-list"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Journals"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "License": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        },
+        "work-count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "URL",
+        "work-count"
+      ]
+    },
+    "Licenses": {
+      "type": "object",
+      "properties": {
+        "total-results": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/License"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "total-results",
+        "items"
+      ]
+    },
+    "LicensesMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "license-list"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Licenses"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "Member": {
+      "type": "object",
+      "properties": {
+        "last-status-check-time": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "primary-name": {
+          "type": "string"
+        },
+        "counts": {
+          "$ref": "#/definitions/DoiCounts"
+        },
+        "breakdowns": {
+          "$ref": "#/definitions/BreakdownsObject"
+        },
+        "prefixes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "coverage": {
+          "$ref": "#/definitions/CoverageFull"
+        },
+        "prefix": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MemberPrefix"
+          }
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "tokens": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "counts-type": {
+          "$ref": "#/definitions/MemberCountsType"
+        },
+        "coverage-type": {
+          "$ref": "#/definitions/CoverageTypeObject"
+        },
+        "flags": {
+          "$ref": "#/definitions/Flags"
+        },
+        "location": {
+          "type": "string"
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "last-status-check-time",
+        "primary-name",
+        "counts",
+        "breakdowns",
+        "prefixes",
+        "coverage",
+        "prefix",
+        "id",
+        "tokens",
+        "counts-type",
+        "coverage-type",
+        "flags",
+        "location",
+        "names"
+      ]
+    },
+    "MemberCountObject": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "format": "int64"
+      }
+    },
+    "MemberCountsType": {
+      "type": "object",
+      "properties": {
+        "all": {
+          "$ref": "#/definitions/MemberCountObject"
+        },
+        "current": {
+          "$ref": "#/definitions/MemberCountObject"
+        },
+        "backfile": {
+          "$ref": "#/definitions/MemberCountObject"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "all",
+        "current",
+        "backfile"
+      ]
+    },
+    "MemberMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "member"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Member"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "MemberPrefix": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value"
+      ]
+    },
+    "Members": {
+      "type": "object",
+      "properties": {
+        "items-per-page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "query": {
+          "$ref": "#/definitions/Query"
+        },
+        "total-results": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Member"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items-per-page",
+        "query",
+        "total-results",
+        "items"
+      ]
+    },
+    "MembersMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "member-list"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Members"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "PostedContentStatus": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "update": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "status-description": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/StatusDescription"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "update",
+        "status-description"
+      ]
+    },
+    "Prefix": {
+      "type": "object",
+      "properties": {
+        "member": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "prefix": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "member",
+        "name",
+        "prefix"
+      ]
+    },
+    "PrefixMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "prefix"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Prefix"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "PrimaryResource": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "URL"
+      ]
+    },
+    "ProjectTitle": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ]
+    },
+    "Query": {
+      "type": "object",
+      "properties": {
+        "start-index": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "search-terms": {
+          "x-oneOf": [
+            {
+              "type": "integer",
+              "format": "int64"
+            },
+            null
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "start-index",
+        "search-terms"
+      ]
+    },
+    "Reference": {
+      "type": "object",
+      "properties": {
+        "issn": {
+          "type": "string"
+        },
+        "standards-body": {
+          "type": "string"
+        },
+        "issue": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "series-title": {
+          "type": "string"
+        },
+        "isbn-type": {
+          "type": "string"
+        },
+        "doi-asserted-by": {
+          "type": "string"
+        },
+        "first-page": {
+          "type": "string"
+        },
+        "DOI": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "isbn": {
+          "type": "string"
+        },
+        "component": {
+          "type": "string"
+        },
+        "article-title": {
+          "type": "string"
+        },
+        "volume-title": {
+          "type": "string"
+        },
+        "volume": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "standard-designator": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        },
+        "unstructured": {
+          "type": "string"
+        },
+        "edition": {
+          "type": "string"
+        },
+        "journal-title": {
+          "type": "string"
+        },
+        "issn-type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Resources": {
+      "type": "object",
+      "properties": {
+        "primary": {
+          "$ref": "#/definitions/PrimaryResource"
+        },
+        "secondary": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SecondaryResource"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "primary"
+      ]
+    },
+    "SecondaryResource": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "URL",
+        "label"
+      ]
+    },
+    "Statement": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "statement-text": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TextValue"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "statement-text"
+      ]
+    },
+    "StatusDescription": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "TextValue": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ]
+    },
+    "Type": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label"
+      ]
+    },
+    "TypeMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "type"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Type"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "Types": {
+      "type": "object",
+      "properties": {
+        "items-per-page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "query": {
+          "$ref": "#/definitions/Query"
+        },
+        "total-results": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Type"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items-per-page",
+        "query",
+        "total-results",
+        "items"
+      ]
+    },
+    "TypesMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "type-list"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Types"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "VersionInfo": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "version-description": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VersionInfoDescription"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "version"
+      ]
+    },
+    "VersionInfoDescription": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Work": {
+      "type": "object",
+      "properties": {
+        "institution": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkInstitution"
+          }
+        },
+        "indexed": {
+          "$ref": "#/definitions/DateAndVersion"
+        },
+        "description": {
+          "type": "string"
+        },
+        "posted": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "publisher-location": {
+          "type": "string"
+        },
+        "update-to": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkUpdate"
+          }
+        },
+        "standards-body": {
+          "$ref": "#/definitions/WorkStandardsBody"
+        },
+        "edition-number": {
+          "type": "string"
+        },
+        "group-title": {
+          "type": "string"
+        },
+        "reference-count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "publisher": {
+          "type": "string"
+        },
+        "issue": {
+          "type": "string"
+        },
+        "isbn-type": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkISSNType"
+          }
+        },
+        "license": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkLicense"
+          }
+        },
+        "funder": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkFunder"
+          }
+        },
+        "content-domain": {
+          "$ref": "#/definitions/WorkDomain"
+        },
+        "chair": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Author"
+          }
+        },
+        "short-container-title": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accepted": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "special-numbering": {
+          "type": "string"
+        },
+        "content-updated": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "published-print": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "abstract": {
+          "type": "string"
+        },
+        "DOI": {
+          "description": "The DOI identifier of the content item.",
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "created": {
+          "$ref": "#/definitions/Date"
+        },
+        "approved": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "page": {
+          "type": "string"
+        },
+        "update-policy": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "is-referenced-by-count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "title": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "prefix": {
+          "type": "string"
+        },
+        "volume": {
+          "type": "string"
+        },
+        "clinical-trial-number": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkClinicalTrial"
+          }
+        },
+        "author": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Author"
+          }
+        },
+        "member": {
+          "type": "string"
+        },
+        "content-created": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "published-online": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "reference": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Reference"
+          }
+        },
+        "updated-by": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkUpdate"
+          }
+        },
+        "event": {
+          "$ref": "#/definitions/WorkEvent"
+        },
+        "container-title": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "review": {
+          "$ref": "#/definitions/WorkReview"
+        },
+        "project": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkProject"
+          }
+        },
+        "original-title": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/PostedContentStatus"
+        },
+        "language": {
+          "type": "string"
+        },
+        "link": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkLink"
+          }
+        },
+        "deposited": {
+          "$ref": "#/definitions/Date"
+        },
+        "score": {
+          "type": "number",
+          "format": "double"
+        },
+        "degree": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resource": {
+          "$ref": "#/definitions/Resources"
+        },
+        "subtitle": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "translator": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Author"
+          }
+        },
+        "free-to-read": {
+          "$ref": "#/definitions/WorkFreeToRead"
+        },
+        "editor": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Author"
+          }
+        },
+        "proceedings-subject": {
+          "type": "string"
+        },
+        "component-number": {
+          "type": "string"
+        },
+        "short-title": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issued": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "ISBN": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "references-count": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "part-number": {
+          "type": "string"
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issue-title": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "journal-issue": {
+          "$ref": "#/definitions/WorkJournalIssue"
+        },
+        "alternative-id": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "version": {
+          "$ref": "#/definitions/VersionInfo"
+        },
+        "URL": {
+          "type": "string"
+        },
+        "archive": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "relation": {
+          "$ref": "#/definitions/WorkRelation"
+        },
+        "ISSN": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "issn-type": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkISSNType"
+          }
+        },
+        "subject": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "published-other": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "published": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "assertion": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkAssertion"
+          }
+        },
+        "subtype": {
+          "type": "string"
+        },
+        "article-number": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "indexed",
+        "publisher",
+        "DOI",
+        "type",
+        "created",
+        "source",
+        "prefix",
+        "member",
+        "deposited",
+        "score",
+        "resource",
+        "issued",
+        "URL"
+      ]
+    },
+    "WorkAssertion": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "#/definitions/WorkAssertionGroup"
+        },
+        "explanation": {
+          "$ref": "#/definitions/WorkAssertionExplanation"
+        },
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "URL": {
+          "type": "string"
+        },
+        "order": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "WorkAssertionExplanation": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "URL"
+      ]
+    },
+    "WorkAssertionGroup": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "WorkClinicalTrial": {
+      "type": "object",
+      "properties": {
+        "clinical-trial-number": {
+          "type": "string"
+        },
+        "registry": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "clinical-trial-number",
+        "registry"
+      ]
+    },
+    "WorkDomain": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "crossmark-restriction": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "domain"
+      ]
+    },
+    "WorkEvent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "end": {
+          "$ref": "#/definitions/DateParts"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "WorkFreeToRead": {
+      "type": "object",
+      "properties": {
+        "start-date": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "end-date": {
+          "$ref": "#/definitions/DateParts"
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkFunder": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "DOI": {
+          "type": "string"
+        },
+        "doi-asserted-by": {
+          "type": "string"
+        },
+        "award": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/FunderIdentifier"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkISSNType": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "value"
+      ]
+    },
+    "WorkInstitution": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "place": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "department": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "acronym": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "id": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AffiliationIdentifier"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "name"
+      ]
+    },
+    "WorkJournalIssue": {
+      "type": "object",
+      "properties": {
+        "issue": {
+          "type": "string"
+        },
+        "published-online": {
+          "$ref": "#/definitions/DateParts"
+        },
+        "published-print": {
+          "$ref": "#/definitions/DateParts"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "issue"
+      ]
+    },
+    "WorkLicense": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        },
+        "start": {
+          "$ref": "#/definitions/Date"
+        },
+        "delay-in-days": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "content-version": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "URL",
+        "delay-in-days",
+        "content-version"
+      ]
+    },
+    "WorkLink": {
+      "type": "object",
+      "properties": {
+        "URL": {
+          "type": "string"
+        },
+        "content-type": {
+          "type": "string"
+        },
+        "content-version": {
+          "type": "string"
+        },
+        "intended-application": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "URL",
+        "content-type",
+        "content-version",
+        "intended-application"
+      ]
+    },
+    "WorkMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "work"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Work"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "WorkProject": {
+      "type": "object",
+      "properties": {
+        "award-end": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DateParts"
+          }
+        },
+        "statement": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Statement"
+          }
+        },
+        "award-planned-start": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DateParts"
+          }
+        },
+        "award-start": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DateParts"
+          }
+        },
+        "lead-investigator": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Investigator"
+          }
+        },
+        "award-planned-end": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/DateParts"
+          }
+        },
+        "investigator": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Investigator"
+          }
+        },
+        "funding": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Funding"
+          }
+        },
+        "id": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorkProjectIdentifier"
+          }
+        },
+        "project-title": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProjectTitle"
+          }
+        },
+        "award-amount": {
+          "$ref": "#/definitions/AwardAmount"
+        },
+        "co-lead-investigator": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Investigator"
+          }
+        },
+        "project-description": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WorksProjectDescription"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "project-title"
+      ]
+    },
+    "WorkProjectIdentifier": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "id-type": {
+          "type": "string"
+        },
+        "asserted-by": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "id-type",
+        "asserted-by"
+      ]
+    },
+    "WorkRelation": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/WorkRelationObject"
+        }
+      }
+    },
+    "WorkRelationObject": {
+      "type": "object",
+      "properties": {
+        "id-type": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "asserted-by": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "id-type",
+        "id",
+        "asserted-by"
+      ]
+    },
+    "WorkReview": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "running-number": {
+          "type": "string"
+        },
+        "revision-round": {
+          "type": "string"
+        },
+        "stage": {
+          "type": "string"
+        },
+        "competing-interest-statement": {
+          "type": "string"
+        },
+        "recommendation": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkStandardsBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "acronym": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "WorkUpdate": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "DOI": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "updated": {
+          "$ref": "#/definitions/Date"
+        },
+        "record-id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "DOI",
+        "type",
+        "source",
+        "updated"
+      ]
+    },
+    "Works": {
+      "type": "object",
+      "properties": {
+        "items-per-page": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "query": {
+          "$ref": "#/definitions/Query"
+        },
+        "total-results": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "next-cursor": {
+          "description": "Retrieve the next page of results when using cursor paging. See <a href='#cursors'>Retrieving large result sets</a>.",
+          "type": "string"
+        },
+        "facets": {},
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Work"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "items-per-page",
+        "query",
+        "total-results",
+        "items"
+      ]
+    },
+    "WorksMessage": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "message-type": {
+          "type": "string",
+          "pattern": "work-list"
+        },
+        "message-version": {
+          "type": "string"
+        },
+        "message": {
+          "$ref": "#/definitions/Works"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "message-type",
+        "message-version",
+        "message"
+      ]
+    },
+    "WorksProjectDescription": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "host": "api.crossref.org",
+  "schemes": [
+    "https"
+  ]
+}

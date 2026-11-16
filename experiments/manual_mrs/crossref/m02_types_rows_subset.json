@@ -1,0 +1,31 @@
+{
+  "title": "Menos filas es un subconjunto",
+  "description": "rows=5 devuelve elementos incluidos en rows=10.",
+  "source": {
+    "method": "GET",
+    "path": "/types",
+    "query_params": {
+      "rows": 10
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "rows",
+          "value": 5,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "subset",
+    "source_selector": "$.message.items[*].id",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se reduce rows a la mitad.",
+  "expected_relation": "ids(rows=5) ⊆ ids(rows=10)",
+  "rationale": "Detecta orden inestable."
+}

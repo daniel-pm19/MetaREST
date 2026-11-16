@@ -1,0 +1,31 @@
+{
+  "title": "Páginas de financiadores no se solapan",
+  "description": "offset=0 y offset=5 con rows=5 no comparten elementos.",
+  "source": {
+    "method": "GET",
+    "path": "/funders",
+    "query_params": {
+      "rows": 5,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "offset",
+          "value": 5,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "disjoint",
+    "source_selector": "$.message.items[*].id"
+  },
+  "transformation_logic": "Se avanza offset.",
+  "expected_relation": "ids(offset=0) ∩ ids(offset=5) = ∅",
+  "rationale": "Detecta paginación que repite elementos."
+}

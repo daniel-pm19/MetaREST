@@ -1,0 +1,655 @@
+{
+  "$defs": {
+    "AddParam": {
+      "additionalProperties": false,
+      "description": "Add a query parameter absent from the source request.",
+      "properties": {
+        "op": {
+          "const": "add_param",
+          "title": "Op",
+          "type": "string"
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "op",
+        "param",
+        "value"
+      ],
+      "title": "AddParam",
+      "type": "object"
+    },
+    "AppendToParam": {
+      "additionalProperties": false,
+      "description": "Append to a string query param (joined by ``separator``) or to a list param.",
+      "properties": {
+        "op": {
+          "const": "append_to_param",
+          "title": "Op",
+          "type": "string"
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            }
+          ],
+          "title": "Value"
+        },
+        "separator": {
+          "default": " ",
+          "title": "Separator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "param",
+        "value"
+      ],
+      "title": "AppendToParam",
+      "type": "object"
+    },
+    "Direction": {
+      "enum": [
+        "followup_in_source",
+        "source_in_followup"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "FollowupSpec": {
+      "additionalProperties": false,
+      "description": "A follow-up request derived from the source request.",
+      "properties": {
+        "method": {
+          "$ref": "#/$defs/HttpMethod",
+          "default": "GET"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "pattern": "^/",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Target endpoint. Omit to reuse the source path.",
+          "title": "Path"
+        },
+        "transformations": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "add_param": "#/$defs/AddParam",
+                "append_to_param": "#/$defs/AppendToParam",
+                "move_param": "#/$defs/MoveParam",
+                "remove_param": "#/$defs/RemoveParam",
+                "scale_param": "#/$defs/ScaleParam",
+                "set_param": "#/$defs/SetParam"
+              },
+              "propertyName": "op"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/SetParam"
+              },
+              {
+                "$ref": "#/$defs/RemoveParam"
+              },
+              {
+                "$ref": "#/$defs/AddParam"
+              },
+              {
+                "$ref": "#/$defs/ScaleParam"
+              },
+              {
+                "$ref": "#/$defs/AppendToParam"
+              },
+              {
+                "$ref": "#/$defs/MoveParam"
+              }
+            ]
+          },
+          "maxItems": 5,
+          "title": "Transformations",
+          "type": "array"
+        }
+      },
+      "title": "FollowupSpec",
+      "type": "object"
+    },
+    "HttpMethod": {
+      "description": "Only safe methods: the executor never mutates the system under test.",
+      "enum": [
+        "GET",
+        "HEAD"
+      ],
+      "title": "HttpMethod",
+      "type": "string"
+    },
+    "InputVariant": {
+      "additionalProperties": false,
+      "description": "Extra input instance: overrides merged on top of the source request params.",
+      "properties": {
+        "path_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "title": "Path Params",
+          "type": "object"
+        },
+        "query_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "Query Params",
+          "type": "object"
+        }
+      },
+      "title": "InputVariant",
+      "type": "object"
+    },
+    "Measure": {
+      "enum": [
+        "count",
+        "value"
+      ],
+      "title": "Measure",
+      "type": "string"
+    },
+    "MoveParam": {
+      "additionalProperties": false,
+      "description": "Move a value between parameters/locations (e.g. ?category=x -> /categories/{category}).",
+      "properties": {
+        "op": {
+          "const": "move_param",
+          "title": "Op",
+          "type": "string"
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        },
+        "from_location": {
+          "$ref": "#/$defs/ParamLocation"
+        },
+        "to_location": {
+          "$ref": "#/$defs/ParamLocation"
+        },
+        "to_param": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Target name; defaults to `param`.",
+          "title": "To Param"
+        }
+      },
+      "required": [
+        "op",
+        "param",
+        "from_location",
+        "to_location"
+      ],
+      "title": "MoveParam",
+      "type": "object"
+    },
+    "ParamLocation": {
+      "enum": [
+        "query",
+        "path"
+      ],
+      "title": "ParamLocation",
+      "type": "string"
+    },
+    "RelationSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/RelationType"
+        },
+        "source_selector": {
+          "default": "$",
+          "description": "JSONPath applied to the source response body, e.g. $.results[*].id",
+          "maxLength": 300,
+          "pattern": "^\\$",
+          "title": "Source Selector",
+          "type": "string"
+        },
+        "followup_selector": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "pattern": "^\\$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "JSONPath applied to each follow-up response. Defaults to source_selector.",
+          "title": "Followup Selector"
+        },
+        "direction": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Direction"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Required for subset and count_leq only."
+        },
+        "measure": {
+          "$ref": "#/$defs/Measure",
+          "default": "count",
+          "description": "Only meaningful for count_leq."
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "RelationSpec",
+      "type": "object"
+    },
+    "RelationType": {
+      "description": "Closed catalog. Semantics (S = source selection, Fi = follow-up i selection)\nare documented in docs/MR_SCHEMA.md and implemented by the executor.",
+      "enum": [
+        "equality",
+        "equivalence",
+        "subset",
+        "disjoint",
+        "complete",
+        "difference",
+        "count_leq",
+        "same_order"
+      ],
+      "title": "RelationType",
+      "type": "string"
+    },
+    "RemoveParam": {
+      "additionalProperties": false,
+      "description": "Remove a query parameter present in the source request.",
+      "properties": {
+        "op": {
+          "const": "remove_param",
+          "title": "Op",
+          "type": "string"
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        }
+      },
+      "required": [
+        "op",
+        "param"
+      ],
+      "title": "RemoveParam",
+      "type": "object"
+    },
+    "RequestSpec": {
+      "additionalProperties": false,
+      "description": "A concrete request against the API under test (base URL excluded).",
+      "properties": {
+        "method": {
+          "$ref": "#/$defs/HttpMethod",
+          "default": "GET"
+        },
+        "path": {
+          "description": "OpenAPI path template, e.g. /items/{id}. Must exist in the spec.",
+          "maxLength": 500,
+          "pattern": "^/",
+          "title": "Path",
+          "type": "string"
+        },
+        "path_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "description": "Value for every {placeholder} in path, and nothing else.",
+          "title": "Path Params",
+          "type": "object"
+        },
+        "query_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "Query Params",
+          "type": "object"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "RequestSpec",
+      "type": "object"
+    },
+    "ScaleParam": {
+      "additionalProperties": false,
+      "description": "Multiply a numeric parameter by ``factor`` (e.g. halve a page size).",
+      "properties": {
+        "op": {
+          "const": "scale_param",
+          "title": "Op",
+          "type": "string"
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/$defs/ParamLocation",
+          "default": "query"
+        },
+        "factor": {
+          "exclusiveMinimum": 0,
+          "title": "Factor",
+          "type": "number"
+        },
+        "round_to_int": {
+          "default": true,
+          "description": "If the original value is an int, round the result to int.",
+          "title": "Round To Int",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "op",
+        "param",
+        "factor"
+      ],
+      "title": "ScaleParam",
+      "type": "object"
+    },
+    "SetParam": {
+      "additionalProperties": false,
+      "description": "Set (or overwrite) a parameter of the follow-up request.",
+      "properties": {
+        "op": {
+          "const": "set_param",
+          "title": "Op",
+          "type": "string"
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/$defs/ParamLocation",
+          "default": "query"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "op",
+        "param",
+        "value"
+      ],
+      "title": "SetParam",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "An executable metamorphic relation, as produced by the LLM.",
+  "properties": {
+    "title": {
+      "maxLength": 120,
+      "minLength": 3,
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "maxLength": 1000,
+      "minLength": 3,
+      "title": "Description",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/RequestSpec"
+    },
+    "followups": {
+      "items": {
+        "$ref": "#/$defs/FollowupSpec"
+      },
+      "maxItems": 4,
+      "minItems": 1,
+      "title": "Followups",
+      "type": "array"
+    },
+    "relation": {
+      "$ref": "#/$defs/RelationSpec"
+    },
+    "transformation_logic": {
+      "description": "How the input is changed.",
+      "maxLength": 500,
+      "minLength": 3,
+      "title": "Transformation Logic",
+      "type": "string"
+    },
+    "expected_relation": {
+      "description": "What must hold between outputs.",
+      "maxLength": 500,
+      "minLength": 3,
+      "title": "Expected Relation",
+      "type": "string"
+    },
+    "rationale": {
+      "description": "Which fault this MR could reveal and why.",
+      "maxLength": 1000,
+      "minLength": 3,
+      "title": "Rationale",
+      "type": "string"
+    },
+    "input_variants": {
+      "items": {
+        "$ref": "#/$defs/InputVariant"
+      },
+      "maxItems": 2,
+      "title": "Input Variants",
+      "type": "array"
+    }
+  },
+  "required": [
+    "title",
+    "description",
+    "source",
+    "followups",
+    "relation",
+    "transformation_logic",
+    "expected_relation",
+    "rationale"
+  ],
+  "title": "MRSpec",
+  "type": "object"
+}

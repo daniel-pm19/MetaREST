@@ -1,0 +1,32 @@
+{
+  "title": "Un filtro no aumenta el total",
+  "description": "Añadir filter=type:journal-article nunca supera el total sin filtro.",
+  "source": {
+    "method": "GET",
+    "path": "/works",
+    "query_params": {
+      "query": "metamorphic testing",
+      "rows": 1
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "add_param",
+          "param": "filter",
+          "value": "type:journal-article"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "count_leq",
+    "source_selector": "$.message.\"total-results\"",
+    "measure": "value",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se añade un filtro por tipo.",
+  "expected_relation": "total(filter) <= total(sin filtro)",
+  "rationale": "Detecta filtros que amplían la búsqueda."
+}

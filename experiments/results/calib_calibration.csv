@@ -1,0 +1,4 @@
+config,valid,invalid,errors,tokens,sem_mean_valid,sem_mean_invalid,sem_auc,fault_mean_valid,keep_valid@0.5,drop_invalid@0.5,keep_valid@0.6,drop_invalid@0.6,keep_valid@0.7,drop_invalid@0.7,keep_valid@0.8,drop_invalid@0.8,keep_valid@0.9,drop_invalid@0.9
+gemini-3.5-flash-lite:low:v1,17,13,0,118628,1.0,0.3077,0.8462,0.8588,1.0,0.6923,1.0,0.6923,1.0,0.6923,1.0,0.6923,1.0,0.6923
+gemini-3.5-flash-lite:low:v2,17,13,0,136939,1.0,0.1538,0.9231,0.8529,1.0,0.8462,1.0,0.8462,1.0,0.8462,1.0,0.8462,1.0,0.8462
+gemini-3.5-flash-lite:medium:v2,17,13,0,160425,1.0,0.0,1.0,0.8353,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0

@@ -1,0 +1,45 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports: ["27017:27017"]
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.13.8"
+          python-version: "3.12"
+      - run: uv sync --locked
+        working-directory: backend
+      - run: uv run ruff check . ../sut-demo
+        working-directory: backend
+      - run: uv run pytest -q
+        working-directory: backend
+        env:
+          TEST_MONGODB_URI: mongodb://127.0.0.1:27017
+      - run: ../backend/.venv/bin/python -m pytest -q
+        working-directory: experiments
+      - run: uv run python -m scripts.check_demo_baseline --out ../experiments/raw/traditional-demo.json
+        working-directory: backend
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend

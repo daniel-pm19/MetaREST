@@ -1,0 +1,4 @@
+src/api/schema.ts
+src/api/types.ts
+openapi.snapshot.json
+package-lock.json

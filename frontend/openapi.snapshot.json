@@ -1,0 +1,3427 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "MetaREST",
+  "version": "0.1.0"
+ },
+ "paths": {
+  "/health": {
+   "get": {
+    "tags": [
+     "health"
+    ],
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": {
+          "type": "string"
+         },
+         "type": "object",
+         "title": "Response Health Health Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Login",
+    "operationId": "login_auth_login_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoginInput"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LoginOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/me": {
+   "get": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Me",
+    "operationId": "me_auth_me_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOutput"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/users": {
+   "get": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Users",
+    "operationId": "users_users_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/UserOutput"
+         },
+         "type": "array",
+         "title": "Response Users Users Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Create User",
+    "operationId": "create_user_users_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NewUser"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/users/{user_id}": {
+   "patch": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Update User",
+    "operationId": "update_user_users__user_id__patch",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "User Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/UserPatch"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/UserOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Delete User",
+    "operationId": "delete_user_users__user_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "User Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/projects": {
+   "get": {
+    "tags": [
+     "projects"
+    ],
+    "summary": "Projects",
+    "operationId": "projects_projects_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/ProjectOutput"
+         },
+         "type": "array",
+         "title": "Response Projects Projects Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "projects"
+    ],
+    "summary": "Create Project",
+    "operationId": "create_project_projects_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NewProject"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProjectOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/projects/{project_id}": {
+   "get": {
+    "tags": [
+     "projects"
+    ],
+    "summary": "Project",
+    "operationId": "project_projects__project_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "project_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Project Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProjectOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "put": {
+    "tags": [
+     "projects"
+    ],
+    "summary": "Update Project",
+    "operationId": "update_project_projects__project_id__put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "project_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Project Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NewProject"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProjectOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/projects/{project_id}/runs": {
+   "get": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "Runs",
+    "operationId": "runs_projects__project_id__runs_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "project_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Project Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/RunOutput"
+         },
+         "title": "Response Runs Projects  Project Id  Runs Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "Start Run",
+    "operationId": "start_run_projects__project_id__runs_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "project_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Project Id"
+      }
+     }
+    ],
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RunOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/runs/{run_id}": {
+   "get": {
+    "tags": [
+     "runs"
+    ],
+    "summary": "Run",
+    "operationId": "run_runs__run_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/RunOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/runs/{run_id}/candidates": {
+   "get": {
+    "tags": [
+     "candidates"
+    ],
+    "summary": "Candidates",
+    "operationId": "candidates_runs__run_id__candidates_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     },
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "$ref": "#/components/schemas/CandidateStatus"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Status"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/MRCandidate"
+         },
+         "title": "Response Candidates Runs  Run Id  Candidates Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/candidates/{candidate_id}/decision": {
+   "post": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "Decide",
+    "operationId": "decide_candidates__candidate_id__decision_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "candidate_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Candidate Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DecisionInput"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/audit": {
+   "get": {
+    "tags": [
+     "decisions"
+    ],
+    "summary": "Decisions",
+    "operationId": "decisions_audit_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Run Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/candidates/export": {
+   "get": {
+    "tags": [
+     "export"
+    ],
+    "summary": "Export Candidates",
+    "operationId": "export_candidates_candidates_export_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "run_id",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Run Id"
+      }
+     },
+     {
+      "name": "format",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "pattern": "^(json|csv)$",
+       "default": "json",
+       "title": "Format"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/metrics/compare": {
+   "get": {
+    "tags": [
+     "metrics"
+    ],
+    "summary": "Compare Runs",
+    "operationId": "compare_runs_metrics_compare_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "runs",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "maxLength": 2000,
+       "title": "Runs"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/MetricsOutput"
+         },
+         "title": "Response Compare Runs Metrics Compare Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/metrics/project/{project_id}": {
+   "get": {
+    "tags": [
+     "metrics"
+    ],
+    "summary": "Project Metrics",
+    "operationId": "project_metrics_metrics_project__project_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "project_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Project Id"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/MetricsOutput"
+         },
+         "title": "Response Project Metrics Metrics Project  Project Id  Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/settings/llm": {
+   "get": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "Llm Settings",
+    "operationId": "llm_settings_settings_llm_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LLMSettings"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "put": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "Save Llm",
+    "operationId": "save_llm_settings_llm_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LLMSettings"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/LLMSettings"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/settings/thresholds": {
+   "get": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "Filter Settings",
+    "operationId": "filter_settings_settings_thresholds_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FilterSettings"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "put": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "Save Filters",
+    "operationId": "save_filters_settings_thresholds_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FilterSettings"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FilterSettings"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/prompts": {
+   "get": {
+    "tags": [
+     "prompts"
+    ],
+    "summary": "Prompts",
+    "operationId": "prompts_prompts_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "items": {
+          "$ref": "#/components/schemas/PromptOutput"
+         },
+         "type": "array",
+         "title": "Response Prompts Prompts Get"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "post": {
+    "tags": [
+     "prompts"
+    ],
+    "summary": "Create Prompt",
+    "operationId": "create_prompt_prompts_post",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NewPrompt"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PromptOutput"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  },
+  "/prompts/{prompt_id}": {
+   "put": {
+    "tags": [
+     "prompts"
+    ],
+    "summary": "Replace Prompt",
+    "operationId": "replace_prompt_prompts__prompt_id__put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "prompt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Prompt Id"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/NewPrompt"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "prompts"
+    ],
+    "summary": "Delete Prompt",
+    "operationId": "delete_prompt_prompts__prompt_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "prompt_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "title": "Prompt Id"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/settings/pipeline": {
+   "get": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "Pipeline Settings",
+    "operationId": "pipeline_settings_settings_pipeline_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PipelineSettings"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   },
+   "put": {
+    "tags": [
+     "settings"
+    ],
+    "summary": "Save Pipeline Settings",
+    "operationId": "save_pipeline_settings_settings_pipeline_put",
+    "requestBody": {
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PipelineSettings"
+       }
+      }
+     },
+     "required": true
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PipelineSettings"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    },
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ]
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AddParam": {
+    "properties": {
+     "op": {
+      "type": "string",
+      "const": "add_param",
+      "title": "Op"
+     },
+     "param": {
+      "type": "string",
+      "title": "Param"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "integer"
+       },
+       {
+        "type": "number"
+       },
+       {
+        "type": "boolean"
+       },
+       {
+        "items": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "integer"
+          },
+          {
+           "type": "number"
+          },
+          {
+           "type": "boolean"
+          }
+         ]
+        },
+        "type": "array"
+       }
+      ],
+      "title": "Value"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "op",
+     "param",
+     "value"
+    ],
+    "title": "AddParam",
+    "description": "Add a query parameter absent from the source request."
+   },
+   "AppendToParam": {
+    "properties": {
+     "op": {
+      "type": "string",
+      "const": "append_to_param",
+      "title": "Op"
+     },
+     "param": {
+      "type": "string",
+      "title": "Param"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "integer"
+       },
+       {
+        "type": "number"
+       },
+       {
+        "type": "boolean"
+       }
+      ],
+      "title": "Value"
+     },
+     "separator": {
+      "type": "string",
+      "title": "Separator",
+      "default": " "
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "op",
+     "param",
+     "value"
+    ],
+    "title": "AppendToParam",
+    "description": "Append to a string query param (joined by ``separator``) or to a list param."
+   },
+   "CandidateStatus": {
+    "type": "string",
+    "enum": [
+     "discarded",
+     "pending_review",
+     "accepted",
+     "rejected"
+    ],
+    "title": "CandidateStatus"
+   },
+   "CriterionScore": {
+    "properties": {
+     "rules_passed": {
+      "type": "boolean",
+      "title": "Rules Passed"
+     },
+     "rule_violations": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Rule Violations"
+     },
+     "llm_score": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Llm Score"
+     },
+     "llm_reason": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Llm Reason"
+     },
+     "score": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score",
+      "description": "Final score of this criterion."
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "rules_passed",
+     "score"
+    ],
+    "title": "CriterionScore",
+    "description": "Result of one filter criterion (rules + optional LLM check)."
+   },
+   "DecisionInput": {
+    "properties": {
+     "decision": {
+      "type": "string",
+      "enum": [
+       "accepted",
+       "rejected"
+      ],
+      "title": "Decision"
+     },
+     "justification": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Justification"
+     },
+     "review_time_ms": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 86400000.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Review Time Ms"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "decision"
+    ],
+    "title": "DecisionInput"
+   },
+   "Direction": {
+    "type": "string",
+    "enum": [
+     "followup_in_source",
+     "source_in_followup"
+    ],
+    "title": "Direction"
+   },
+   "DiscardReason": {
+    "type": "string",
+    "enum": [
+     "not_executable",
+     "invalid_semantics",
+     "low_fault_revealing",
+     "redundant"
+    ],
+    "title": "DiscardReason"
+   },
+   "ExecutionResult": {
+    "properties": {
+     "verdict": {
+      "$ref": "#/components/schemas/Verdict"
+     },
+     "instances": {
+      "items": {
+       "$ref": "#/components/schemas/InstanceExecution"
+      },
+      "type": "array",
+      "title": "Instances"
+     },
+     "executed_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Executed At"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "verdict"
+    ],
+    "title": "ExecutionResult"
+   },
+   "FilterOutcome": {
+    "properties": {
+     "passed": {
+      "type": "boolean",
+      "title": "Passed"
+     },
+     "stage": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FilterStage"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Stage that discarded the MR."
+     },
+     "reason": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/DiscardReason"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "detail": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detail"
+     },
+     "duplicate_of": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duplicate Of",
+      "description": "Candidate id this MR is redundant with."
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "passed"
+    ],
+    "title": "FilterOutcome"
+   },
+   "FilterSettings": {
+    "properties": {
+     "semantic_weight": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Semantic Weight",
+      "default": 0.5
+     },
+     "fault_weight": {
+      "type": "number",
+      "minimum": 0.0,
+      "title": "Fault Weight",
+      "default": 0.5
+     },
+     "min_semantic": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Min Semantic",
+      "default": 0.6
+     },
+     "min_fault_revealing": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Min Fault Revealing",
+      "default": 0.5
+     },
+     "similarity_threshold": {
+      "type": "number",
+      "maximum": 1.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Similarity Threshold",
+      "default": 0.975
+     },
+     "use_llm_checks": {
+      "type": "boolean",
+      "title": "Use Llm Checks",
+      "default": true
+     },
+     "llm_concurrency": {
+      "type": "integer",
+      "maximum": 16.0,
+      "minimum": 1.0,
+      "title": "Llm Concurrency",
+      "default": 4
+     },
+     "semantic_prompt": {
+      "type": "string",
+      "title": "Semantic Prompt",
+      "default": "semcheck_v2"
+     },
+     "fault_prompt": {
+      "type": "string",
+      "title": "Fault Prompt",
+      "default": "faultcheck_v2"
+     },
+     "embedding_model": {
+      "type": "string",
+      "title": "Embedding Model",
+      "default": "BAAI/bge-small-en-v1.5"
+     }
+    },
+    "type": "object",
+    "title": "FilterSettings"
+   },
+   "FilterStage": {
+    "type": "string",
+    "enum": [
+     "schema",
+     "semantic",
+     "fault_revealing",
+     "diversity"
+    ],
+    "title": "FilterStage"
+   },
+   "FollowupSpec": {
+    "properties": {
+     "method": {
+      "$ref": "#/components/schemas/HttpMethod",
+      "default": "GET"
+     },
+     "path": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500,
+        "pattern": "^/"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Path",
+      "description": "Target endpoint. Omit to reuse the source path."
+     },
+     "transformations": {
+      "items": {
+       "oneOf": [
+        {
+         "$ref": "#/components/schemas/SetParam"
+        },
+        {
+         "$ref": "#/components/schemas/RemoveParam"
+        },
+        {
+         "$ref": "#/components/schemas/AddParam"
+        },
+        {
+         "$ref": "#/components/schemas/ScaleParam"
+        },
+        {
+         "$ref": "#/components/schemas/AppendToParam"
+        },
+        {
+         "$ref": "#/components/schemas/MoveParam"
+        }
+       ],
+       "discriminator": {
+        "propertyName": "op",
+        "mapping": {
+         "add_param": "#/components/schemas/AddParam",
+         "append_to_param": "#/components/schemas/AppendToParam",
+         "move_param": "#/components/schemas/MoveParam",
+         "remove_param": "#/components/schemas/RemoveParam",
+         "scale_param": "#/components/schemas/ScaleParam",
+         "set_param": "#/components/schemas/SetParam"
+        }
+       }
+      },
+      "type": "array",
+      "maxItems": 5,
+      "title": "Transformations"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "title": "FollowupSpec",
+    "description": "A follow-up request derived from the source request."
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "HttpExchange": {
+    "properties": {
+     "method": {
+      "$ref": "#/components/schemas/HttpMethod"
+     },
+     "url": {
+      "type": "string",
+      "title": "Url"
+     },
+     "status_code": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Status Code"
+     },
+     "elapsed_ms": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Elapsed Ms"
+     },
+     "response_excerpt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 4000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Response Excerpt"
+     },
+     "selected_excerpt": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Selected Excerpt",
+      "description": "Selector output."
+     },
+     "from_cache": {
+      "type": "boolean",
+      "title": "From Cache",
+      "default": false
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "method",
+     "url"
+    ],
+    "title": "HttpExchange"
+   },
+   "HttpMethod": {
+    "type": "string",
+    "enum": [
+     "GET",
+     "HEAD"
+    ],
+    "title": "HttpMethod",
+    "description": "Only safe methods: the executor never mutates the system under test."
+   },
+   "InputVariant": {
+    "properties": {
+     "path_params": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        },
+        {
+         "type": "number"
+        },
+        {
+         "type": "boolean"
+        }
+       ]
+      },
+      "type": "object",
+      "title": "Path Params"
+     },
+     "query_params": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        },
+        {
+         "type": "number"
+        },
+        {
+         "type": "boolean"
+        },
+        {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           },
+           {
+            "type": "number"
+           },
+           {
+            "type": "boolean"
+           }
+          ]
+         },
+         "type": "array"
+        }
+       ]
+      },
+      "type": "object",
+      "title": "Query Params"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "title": "InputVariant",
+    "description": "Extra input instance: overrides merged on top of the source request params."
+   },
+   "InstanceExecution": {
+    "properties": {
+     "index": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Index",
+      "description": "0 = base source, 1.. = input variants"
+     },
+     "source": {
+      "$ref": "#/components/schemas/HttpExchange"
+     },
+     "followups": {
+      "items": {
+       "$ref": "#/components/schemas/HttpExchange"
+      },
+      "type": "array",
+      "title": "Followups"
+     },
+     "verdict": {
+      "$ref": "#/components/schemas/Verdict"
+     },
+     "message": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Message"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "index",
+     "source",
+     "followups",
+     "verdict"
+    ],
+    "title": "InstanceExecution"
+   },
+   "LLMSettings": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "enum": [
+       "anthropic",
+       "openai",
+       "gemini",
+       "fake"
+      ],
+      "title": "Provider",
+      "default": "anthropic"
+     },
+     "generation_model": {
+      "type": "string",
+      "title": "Generation Model",
+      "default": "claude-sonnet-5-5"
+     },
+     "generation_effort": {
+      "type": "string",
+      "enum": [
+       "low",
+       "medium",
+       "high",
+       "xhigh",
+       "max"
+      ],
+      "title": "Generation Effort",
+      "default": "medium"
+     },
+     "generation_max_tokens": {
+      "type": "integer",
+      "maximum": 128000.0,
+      "minimum": 1024.0,
+      "title": "Generation Max Tokens",
+      "default": 32000
+     },
+     "verification_model": {
+      "type": "string",
+      "title": "Verification Model",
+      "default": "claude-haiku-5-5"
+     },
+     "verification_effort": {
+      "type": "string",
+      "enum": [
+       "low",
+       "medium",
+       "high",
+       "xhigh",
+       "max"
+      ],
+      "title": "Verification Effort",
+      "default": "low"
+     },
+     "verification_max_tokens": {
+      "type": "integer",
+      "maximum": 128000.0,
+      "minimum": 256.0,
+      "title": "Verification Max Tokens",
+      "default": 4000
+     },
+     "max_candidates": {
+      "type": "integer",
+      "maximum": 50.0,
+      "minimum": 1.0,
+      "title": "Max Candidates",
+      "description": "MRs requested per run (cost control).",
+      "default": 20
+     },
+     "enable_fallbacks": {
+      "type": "boolean",
+      "title": "Enable Fallbacks",
+      "description": "Server-side refusal fallbacks when supported.",
+      "default": true
+     },
+     "timeout_seconds": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Timeout Seconds",
+      "default": 600.0
+     },
+     "max_retries": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 0.0,
+      "title": "Max Retries",
+      "default": 2
+     },
+     "requests_per_minute": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 10000.0,
+        "minimum": 1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Requests Per Minute",
+      "description": "Client-side limit per model; None = no limit."
+     }
+    },
+    "type": "object",
+    "title": "LLMSettings"
+   },
+   "LoginInput": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Password"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "email",
+     "password"
+    ],
+    "title": "LoginInput"
+   },
+   "LoginOutput": {
+    "properties": {
+     "access_token": {
+      "type": "string",
+      "title": "Access Token"
+     },
+     "token_type": {
+      "type": "string",
+      "const": "bearer",
+      "title": "Token Type",
+      "default": "bearer"
+     },
+     "user": {
+      "$ref": "#/components/schemas/UserOutput"
+     }
+    },
+    "type": "object",
+    "required": [
+     "access_token",
+     "user"
+    ],
+    "title": "LoginOutput"
+   },
+   "MRCandidate": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "project_id": {
+      "type": "string",
+      "title": "Project Id"
+     },
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "schema_version": {
+      "type": "string",
+      "title": "Schema Version",
+      "default": "1.0"
+     },
+     "spec": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MRSpec"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "None only when the LLM output was not executable."
+     },
+     "raw_output": {
+      "anyOf": [
+       {},
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Raw Output",
+      "description": "Original LLM item, kept when spec is None."
+     },
+     "provenance": {
+      "$ref": "#/components/schemas/Provenance"
+     },
+     "scores": {
+      "$ref": "#/components/schemas/Scores"
+     },
+     "filter_result": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FilterOutcome"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "execution": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/ExecutionResult"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "status": {
+      "$ref": "#/components/schemas/CandidateStatus",
+      "default": "pending_review"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "project_id",
+     "run_id",
+     "provenance"
+    ],
+    "title": "MRCandidate",
+    "description": "An MR plus everything the pipeline and the reviewer attached to it."
+   },
+   "MRSpec": {
+    "properties": {
+     "title": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 3,
+      "title": "Title"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "minLength": 3,
+      "title": "Description"
+     },
+     "source": {
+      "$ref": "#/components/schemas/RequestSpec"
+     },
+     "followups": {
+      "items": {
+       "$ref": "#/components/schemas/FollowupSpec"
+      },
+      "type": "array",
+      "maxItems": 4,
+      "minItems": 1,
+      "title": "Followups"
+     },
+     "relation": {
+      "$ref": "#/components/schemas/RelationSpec"
+     },
+     "transformation_logic": {
+      "type": "string",
+      "maxLength": 500,
+      "minLength": 3,
+      "title": "Transformation Logic",
+      "description": "How the input is changed."
+     },
+     "expected_relation": {
+      "type": "string",
+      "maxLength": 500,
+      "minLength": 3,
+      "title": "Expected Relation",
+      "description": "What must hold between outputs."
+     },
+     "rationale": {
+      "type": "string",
+      "maxLength": 1000,
+      "minLength": 3,
+      "title": "Rationale",
+      "description": "Which fault this MR could reveal and why."
+     },
+     "input_variants": {
+      "items": {
+       "$ref": "#/components/schemas/InputVariant"
+      },
+      "type": "array",
+      "maxItems": 2,
+      "title": "Input Variants"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "title",
+     "description",
+     "source",
+     "followups",
+     "relation",
+     "transformation_logic",
+     "expected_relation",
+     "rationale"
+    ],
+    "title": "MRSpec",
+    "description": "An executable metamorphic relation, as produced by the LLM."
+   },
+   "Measure": {
+    "type": "string",
+    "enum": [
+     "count",
+     "value"
+    ],
+    "title": "Measure"
+   },
+   "MetricsOutput": {
+    "properties": {
+     "run_id": {
+      "type": "string",
+      "title": "Run Id"
+     },
+     "round": {
+      "type": "integer",
+      "title": "Round"
+     },
+     "generated": {
+      "type": "integer",
+      "title": "Generated"
+     },
+     "discarded": {
+      "type": "integer",
+      "title": "Discarded"
+     },
+     "pending": {
+      "type": "integer",
+      "title": "Pending"
+     },
+     "accepted": {
+      "type": "integer",
+      "title": "Accepted"
+     },
+     "rejected": {
+      "type": "integer",
+      "title": "Rejected"
+     },
+     "violations": {
+      "type": "integer",
+      "title": "Violations"
+     },
+     "confirmed_faults": {
+      "type": "integer",
+      "title": "Confirmed Faults"
+     },
+     "acceptance_rate": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Acceptance Rate"
+     },
+     "tokens": {
+      "type": "integer",
+      "title": "Tokens"
+     },
+     "avg_combined": {
+      "type": "integer",
+      "title": "Avg Combined"
+     },
+     "avg_review_ms": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avg Review Ms"
+     }
+    },
+    "type": "object",
+    "required": [
+     "run_id",
+     "round",
+     "generated",
+     "discarded",
+     "pending",
+     "accepted",
+     "rejected",
+     "violations",
+     "confirmed_faults",
+     "acceptance_rate",
+     "tokens",
+     "avg_combined",
+     "avg_review_ms"
+    ],
+    "title": "MetricsOutput"
+   },
+   "MoveParam": {
+    "properties": {
+     "op": {
+      "type": "string",
+      "const": "move_param",
+      "title": "Op"
+     },
+     "param": {
+      "type": "string",
+      "title": "Param"
+     },
+     "from_location": {
+      "$ref": "#/components/schemas/ParamLocation"
+     },
+     "to_location": {
+      "$ref": "#/components/schemas/ParamLocation"
+     },
+     "to_param": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "To Param",
+      "description": "Target name; defaults to `param`."
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "op",
+     "param",
+     "from_location",
+     "to_location"
+    ],
+    "title": "MoveParam",
+    "description": "Move a value between parameters/locations (e.g. ?category=x -> /categories/{category})."
+   },
+   "NewProject": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "base_url": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Base Url"
+     },
+     "openapi": {
+      "type": "string",
+      "maxLength": 2000000,
+      "minLength": 1,
+      "title": "Openapi"
+     },
+     "auth_env_key": {
+      "anyOf": [
+       {
+        "type": "string",
+        "pattern": "^SUT_[A-Z0-9_]+$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Auth Env Key"
+     },
+     "max_concurrency": {
+      "type": "integer",
+      "maximum": 16.0,
+      "minimum": 1.0,
+      "title": "Max Concurrency",
+      "default": 4
+     },
+     "min_interval": {
+      "type": "number",
+      "maximum": 60.0,
+      "minimum": 0.0,
+      "title": "Min Interval",
+      "default": 0
+     },
+     "timeout": {
+      "type": "number",
+      "maximum": 120.0,
+      "exclusiveMinimum": 0.0,
+      "title": "Timeout",
+      "default": 10
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "name",
+     "base_url",
+     "openapi"
+    ],
+    "title": "NewProject"
+   },
+   "NewPrompt": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$",
+      "title": "Id"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "generation",
+       "semantic",
+       "fault"
+      ],
+      "title": "Kind"
+     },
+     "system": {
+      "type": "string",
+      "maxLength": 50000,
+      "minLength": 1,
+      "title": "System"
+     },
+     "user": {
+      "type": "string",
+      "maxLength": 50000,
+      "minLength": 1,
+      "title": "User"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "kind",
+     "system",
+     "user"
+    ],
+    "title": "NewPrompt"
+   },
+   "NewUser": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 120,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "role": {
+      "$ref": "#/components/schemas/Role"
+     },
+     "password": {
+      "type": "string",
+      "title": "Password"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "name",
+     "email",
+     "role",
+     "password"
+    ],
+    "title": "NewUser"
+   },
+   "ParamLocation": {
+    "type": "string",
+    "enum": [
+     "query",
+     "path"
+    ],
+    "title": "ParamLocation"
+   },
+   "PipelineSettings": {
+    "properties": {
+     "llm": {
+      "$ref": "#/components/schemas/LLMSettings"
+     },
+     "filters": {
+      "$ref": "#/components/schemas/FilterSettings"
+     },
+     "generation_prompt": {
+      "type": "string",
+      "title": "Generation Prompt",
+      "default": "gen_v1"
+     },
+     "execution_concurrency": {
+      "type": "integer",
+      "maximum": 16.0,
+      "minimum": 1.0,
+      "title": "Execution Concurrency",
+      "default": 4
+     }
+    },
+    "type": "object",
+    "title": "PipelineSettings",
+    "description": "Snapshot of the configuration used by a run (store it with the run)."
+   },
+   "ProjectOutput": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "base_url": {
+      "type": "string",
+      "title": "Base Url"
+     },
+     "endpoints": {
+      "type": "integer",
+      "title": "Endpoints"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "base_url",
+     "endpoints",
+     "created_at"
+    ],
+    "title": "ProjectOutput"
+   },
+   "PromptOutput": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$",
+      "title": "Id"
+     },
+     "kind": {
+      "type": "string",
+      "enum": [
+       "generation",
+       "semantic",
+       "fault"
+      ],
+      "title": "Kind"
+     },
+     "system": {
+      "type": "string",
+      "maxLength": 50000,
+      "minLength": 1,
+      "title": "System"
+     },
+     "user": {
+      "type": "string",
+      "maxLength": 50000,
+      "minLength": 1,
+      "title": "User"
+     },
+     "editable": {
+      "type": "boolean",
+      "title": "Editable"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "id",
+     "kind",
+     "system",
+     "user",
+     "editable"
+    ],
+    "title": "PromptOutput"
+   },
+   "Provenance": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "title": "Provider",
+      "description": "e.g. anthropic"
+     },
+     "model": {
+      "type": "string",
+      "title": "Model",
+      "description": "e.g. claude-sonnet-5-5"
+     },
+     "prompt_version": {
+      "type": "string",
+      "title": "Prompt Version",
+      "description": "e.g. gen_v1"
+     },
+     "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Generated At"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "provider",
+     "model",
+     "prompt_version"
+    ],
+    "title": "Provenance"
+   },
+   "RelationSpec": {
+    "properties": {
+     "type": {
+      "$ref": "#/components/schemas/RelationType"
+     },
+     "source_selector": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^\\$",
+      "title": "Source Selector",
+      "description": "JSONPath applied to the source response body, e.g. $.results[*].id",
+      "default": "$"
+     },
+     "followup_selector": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 300,
+        "pattern": "^\\$"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Followup Selector",
+      "description": "JSONPath applied to each follow-up response. Defaults to source_selector."
+     },
+     "direction": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Direction"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "description": "Required for subset and count_leq only."
+     },
+     "measure": {
+      "$ref": "#/components/schemas/Measure",
+      "description": "Only meaningful for count_leq.",
+      "default": "count"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "type"
+    ],
+    "title": "RelationSpec"
+   },
+   "RelationType": {
+    "type": "string",
+    "enum": [
+     "equality",
+     "equivalence",
+     "subset",
+     "disjoint",
+     "complete",
+     "difference",
+     "count_leq",
+     "same_order"
+    ],
+    "title": "RelationType",
+    "description": "Closed catalog. Semantics (S = source selection, Fi = follow-up i selection)\nare documented in docs/MR_SCHEMA.md and implemented by the executor."
+   },
+   "RemoveParam": {
+    "properties": {
+     "op": {
+      "type": "string",
+      "const": "remove_param",
+      "title": "Op"
+     },
+     "param": {
+      "type": "string",
+      "title": "Param"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "op",
+     "param"
+    ],
+    "title": "RemoveParam",
+    "description": "Remove a query parameter present in the source request."
+   },
+   "RequestSpec": {
+    "properties": {
+     "method": {
+      "$ref": "#/components/schemas/HttpMethod",
+      "default": "GET"
+     },
+     "path": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^/",
+      "title": "Path",
+      "description": "OpenAPI path template, e.g. /items/{id}. Must exist in the spec."
+     },
+     "path_params": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        },
+        {
+         "type": "number"
+        },
+        {
+         "type": "boolean"
+        }
+       ]
+      },
+      "type": "object",
+      "title": "Path Params",
+      "description": "Value for every {placeholder} in path, and nothing else."
+     },
+     "query_params": {
+      "additionalProperties": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        },
+        {
+         "type": "number"
+        },
+        {
+         "type": "boolean"
+        },
+        {
+         "items": {
+          "anyOf": [
+           {
+            "type": "string"
+           },
+           {
+            "type": "integer"
+           },
+           {
+            "type": "number"
+           },
+           {
+            "type": "boolean"
+           }
+          ]
+         },
+         "type": "array"
+        }
+       ]
+      },
+      "type": "object",
+      "title": "Query Params"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "path"
+    ],
+    "title": "RequestSpec",
+    "description": "A concrete request against the API under test (base URL excluded)."
+   },
+   "Role": {
+    "type": "string",
+    "enum": [
+     "admin",
+     "qa",
+     "observer"
+    ],
+    "title": "Role"
+   },
+   "RunOutput": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "project_id": {
+      "type": "string",
+      "title": "Project Id"
+     },
+     "project_name": {
+      "type": "string",
+      "title": "Project Name"
+     },
+     "round": {
+      "type": "integer",
+      "title": "Round"
+     },
+     "status": {
+      "type": "string",
+      "enum": [
+       "running",
+       "awaiting_review",
+       "failed"
+      ],
+      "title": "Status"
+     },
+     "report": {
+      "$ref": "#/components/schemas/RunReport"
+     },
+     "counts": {
+      "additionalProperties": {
+       "type": "integer"
+      },
+      "type": "object",
+      "title": "Counts"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "project_id",
+     "project_name",
+     "round",
+     "status",
+     "report",
+     "counts"
+    ],
+    "title": "RunOutput"
+   },
+   "RunReport": {
+    "properties": {
+     "stages": {
+      "items": {
+       "$ref": "#/components/schemas/StageReport"
+      },
+      "type": "array",
+      "title": "Stages"
+     },
+     "provider": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Provider"
+     },
+     "generation_model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Generation Model",
+      "description": "Model that actually answered."
+     },
+     "verification_model": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Verification Model"
+     },
+     "prompt_versions": {
+      "additionalProperties": {
+       "type": "string"
+      },
+      "type": "object",
+      "title": "Prompt Versions"
+     },
+     "fallback_used": {
+      "type": "boolean",
+      "title": "Fallback Used",
+      "default": false
+     },
+     "embedder": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Embedder"
+     },
+     "warnings": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "title": "Warnings"
+     },
+     "error": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Error"
+     },
+     "started_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Started At"
+     },
+     "finished_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Finished At"
+     }
+    },
+    "type": "object",
+    "title": "RunReport"
+   },
+   "ScaleParam": {
+    "properties": {
+     "op": {
+      "type": "string",
+      "const": "scale_param",
+      "title": "Op"
+     },
+     "param": {
+      "type": "string",
+      "title": "Param"
+     },
+     "location": {
+      "$ref": "#/components/schemas/ParamLocation",
+      "default": "query"
+     },
+     "factor": {
+      "type": "number",
+      "exclusiveMinimum": 0.0,
+      "title": "Factor"
+     },
+     "round_to_int": {
+      "type": "boolean",
+      "title": "Round To Int",
+      "description": "If the original value is an int, round the result to int.",
+      "default": true
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "op",
+     "param",
+     "factor"
+    ],
+    "title": "ScaleParam",
+    "description": "Multiply a numeric parameter by ``factor`` (e.g. halve a page size)."
+   },
+   "Scores": {
+    "properties": {
+     "semantic_validity": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CriterionScore"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "fault_revealing": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/CriterionScore"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "max_similarity": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": -1.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Max Similarity",
+      "description": "Highest cosine similarity to an already selected MR."
+     },
+     "combined": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 1.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Combined"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "title": "Scores"
+   },
+   "SetParam": {
+    "properties": {
+     "op": {
+      "type": "string",
+      "const": "set_param",
+      "title": "Op"
+     },
+     "param": {
+      "type": "string",
+      "title": "Param"
+     },
+     "location": {
+      "$ref": "#/components/schemas/ParamLocation",
+      "default": "query"
+     },
+     "value": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "integer"
+       },
+       {
+        "type": "number"
+       },
+       {
+        "type": "boolean"
+       },
+       {
+        "items": {
+         "anyOf": [
+          {
+           "type": "string"
+          },
+          {
+           "type": "integer"
+          },
+          {
+           "type": "number"
+          },
+          {
+           "type": "boolean"
+          }
+         ]
+        },
+        "type": "array"
+       }
+      ],
+      "title": "Value"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "required": [
+     "op",
+     "param",
+     "value"
+    ],
+    "title": "SetParam",
+    "description": "Set (or overwrite) a parameter of the follow-up request."
+   },
+   "StageName": {
+    "type": "string",
+    "enum": [
+     "extract",
+     "generate",
+     "semantic",
+     "fault_revealing",
+     "diversity",
+     "execute"
+    ],
+    "title": "StageName"
+   },
+   "StageReport": {
+    "properties": {
+     "name": {
+      "$ref": "#/components/schemas/StageName"
+     },
+     "status": {
+      "$ref": "#/components/schemas/StageStatus",
+      "default": "pending"
+     },
+     "started_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Started At"
+     },
+     "finished_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Finished At"
+     },
+     "duration_ms": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Duration Ms"
+     },
+     "input_count": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Input Count"
+     },
+     "output_count": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Output Count"
+     },
+     "usage": {
+      "$ref": "#/components/schemas/TokenUsage"
+     },
+     "detail": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 1000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "StageReport"
+   },
+   "StageStatus": {
+    "type": "string",
+    "enum": [
+     "pending",
+     "running",
+     "done",
+     "failed",
+     "skipped"
+    ],
+    "title": "StageStatus"
+   },
+   "TokenUsage": {
+    "properties": {
+     "input_tokens": {
+      "type": "integer",
+      "title": "Input Tokens",
+      "default": 0
+     },
+     "output_tokens": {
+      "type": "integer",
+      "title": "Output Tokens",
+      "default": 0
+     },
+     "cache_read_input_tokens": {
+      "type": "integer",
+      "title": "Cache Read Input Tokens",
+      "default": 0
+     },
+     "cache_creation_input_tokens": {
+      "type": "integer",
+      "title": "Cache Creation Input Tokens",
+      "default": 0
+     }
+    },
+    "type": "object",
+    "title": "TokenUsage"
+   },
+   "UserOutput": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "role": {
+      "$ref": "#/components/schemas/Role"
+     },
+     "active": {
+      "type": "boolean",
+      "title": "Active"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "email",
+     "role",
+     "active"
+    ],
+    "title": "UserOutput"
+   },
+   "UserPatch": {
+    "properties": {
+     "role": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Role"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "active": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Active"
+     }
+    },
+    "additionalProperties": false,
+    "type": "object",
+    "title": "UserPatch"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "Verdict": {
+    "type": "string",
+    "enum": [
+     "pass",
+     "violation",
+     "error",
+     "skipped"
+    ],
+    "title": "Verdict"
+   }
+  },
+  "securitySchemes": {
+   "HTTPBearer": {
+    "type": "http",
+    "scheme": "bearer"
+   }
+  }
+ }
+}

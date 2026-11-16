@@ -1,0 +1,30 @@
+{
+  "llm": {
+    "provider": "gemini",
+    "generation_model": "gemini-4-hydrogen",
+    "generation_effort": "medium",
+    "generation_max_tokens": 32000,
+    "verification_model": "gemini-3.5-flash-lite",
+    "verification_effort": "medium",
+    "verification_max_tokens": 4000,
+    "max_candidates": 20,
+    "enable_fallbacks": true,
+    "timeout_seconds": 600.0,
+    "max_retries": 2,
+    "requests_per_minute": 12
+  },
+  "filters": {
+    "semantic_weight": 0.5,
+    "fault_weight": 0.5,
+    "min_semantic": 0.6,
+    "min_fault_revealing": 0.5,
+    "similarity_threshold": 0.975,
+    "use_llm_checks": true,
+    "llm_concurrency": 4,
+    "semantic_prompt": "semcheck_v2",
+    "fault_prompt": "faultcheck_v2",
+    "embedding_model": "BAAI/bge-small-en-v1.5"
+  },
+  "generation_prompt": "gen_v1",
+  "execution_concurrency": 4
+}

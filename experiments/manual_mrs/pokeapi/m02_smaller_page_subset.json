@@ -1,0 +1,32 @@
+{
+  "title": "Una página menor está contenida en la mayor",
+  "description": "Con el mismo offset, limit=5 devuelve elementos que están en limit=10.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/pokemon/",
+    "query_params": {
+      "limit": 10,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 5,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "subset",
+    "source_selector": "$.results[*].name",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se reduce limit a la mitad.",
+  "expected_relation": "names(limit=5) ⊆ names(limit=10)",
+  "rationale": "Detecta orden inestable entre consultas."
+}

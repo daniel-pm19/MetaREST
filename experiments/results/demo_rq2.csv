@@ -1,0 +1,7 @@
+run,threshold,run_threshold,set,mrs,clusters,redundant_mrs,redundancy_rate,redundant_pairs,mean_max_similarity
+demo_run1,0.95,0.975,generated,20,7,13,0.65,31,0.9715
+demo_run1,0.95,0.975,pre_diversity,18,7,11,0.6111,22,0.9696
+demo_run1,0.95,0.975,post_diversity,12,8,4,0.3333,5,0.9539
+demo_run1,0.975,0.975,generated,20,13,7,0.35,9,0.9715
+demo_run1,0.975,0.975,pre_diversity,18,12,6,0.3333,7,0.9696
+demo_run1,0.975,0.975,post_diversity,12,12,0,0.0,0,0.9539

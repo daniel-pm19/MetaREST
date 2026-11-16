@@ -1,0 +1,31 @@
+{
+  "title": "Páginas adyacentes no se solapan",
+  "description": "offset=0 y offset=10 con limit=10 no comparten elementos.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/pokemon/",
+    "query_params": {
+      "limit": 10,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "offset",
+          "value": 10,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "disjoint",
+    "source_selector": "$.results[*].name"
+  },
+  "transformation_logic": "Se avanza offset en limit.",
+  "expected_relation": "names(offset=0) ∩ names(offset=10) = ∅",
+  "rationale": "Detecta paginación que repite elementos."
+}

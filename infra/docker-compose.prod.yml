@@ -1,0 +1,47 @@
+services:
+  mongo:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?Configura MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Configura MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+  backend:
+    image: ghcr.io/${GHCR_OWNER:?Configura GHCR_OWNER}/metarest-backend:${IMAGE_TAG:-latest}
+    environment:
+      MONGODB_URI: ${MONGODB_URI:?URI interna autenticada de Mongo requerida}
+      MONGODB_DATABASE: metarest
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET requerido}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?ADMIN_EMAIL requerido}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD requerido}
+      CORS_ORIGINS: '[]'
+      FASTEMBED_CACHE_DIR: /data/fastembed
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - fastembed-cache:/data/fastembed
+    depends_on: [mongo]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  frontend:
+    image: ghcr.io/${GHCR_OWNER:?Configura GHCR_OWNER}/metarest-frontend:${IMAGE_TAG:-latest}
+    environment:
+      DOMAIN: ${DOMAIN:?Dominio HTTPS requerido}
+      NGINX_ENVSUBST_FILTER: DOMAIN
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./nginx/prod.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot:/var/www/certbot:ro
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  mongo-data:
+  fastembed-cache:

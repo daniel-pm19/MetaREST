@@ -1,0 +1,27 @@
+{
+  "title": "Dos páginas de 10 cubren una página de 20",
+  "description": "La unión de las páginas 1 y 2 con limit=10 debe contener exactamente los mismos elementos que la página 1 con limit=20.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": { "q": "jazz", "limit": 20, "page": 1, "sort": "id_asc" }
+  },
+  "followups": [
+    {
+      "transformations": [{ "op": "set_param", "param": "limit", "value": 10 }]
+    },
+    {
+      "transformations": [
+        { "op": "set_param", "param": "limit", "value": 10 },
+        { "op": "set_param", "param": "page", "value": 2 }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "complete",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "La página de 20 se parte en dos páginas consecutivas de 10 con el mismo orden.",
+  "expected_relation": "set(page1, limit=20) == set(page1, limit=10) ∪ set(page2, limit=10)",
+  "rationale": "Detecta errores off-by-one en la paginación y elementos perdidos o repetidos entre páginas."
+}

@@ -1,0 +1,32 @@
+{
+  "title": "Páginas consecutivas no se solapan",
+  "description": "La página 1 y la 2 de una misma consulta no comparten elementos.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "rock",
+      "limit": 10,
+      "page": 1
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "page",
+          "value": 2,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "disjoint",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "Se pasa de la página 1 a la 2.",
+  "expected_relation": "ids(page=1) ∩ ids(page=2) = ∅",
+  "rationale": "Detecta paginación que repite elementos."
+}

@@ -1,0 +1,36 @@
+{
+  "id": "cand_07",
+  "project_id": "proj_demo",
+  "run_id": "run_001",
+  "schema_version": "1.0",
+  "spec": {
+    "title": "Limit menor devuelve elementos contenidos",
+    "description": "Con limit=5 los resultados deben estar dentro de los obtenidos con limit=10.",
+    "source": { "method": "GET", "path": "/search", "query_params": { "q": "jazz", "limit": 10 } },
+    "followups": [{ "transformations": [{ "op": "set_param", "param": "limit", "value": 5 }] }],
+    "relation": { "type": "subset", "source_selector": "$.results[*].id", "direction": "followup_in_source" },
+    "transformation_logic": "Se cambia limit de 10 a 5.",
+    "expected_relation": "results(limit=5) ⊆ results(limit=10)",
+    "rationale": "Verifica que limit se respete."
+  },
+  "provenance": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-5-5",
+    "prompt_version": "gen_v1",
+    "generated_at": "2026-11-14T15:02:11Z"
+  },
+  "scores": {
+    "semantic_validity": { "rules_passed": true, "llm_score": 0.9, "score": 0.9 },
+    "fault_revealing": { "rules_passed": true, "llm_score": 0.7, "score": 0.7 },
+    "max_similarity": 0.96,
+    "combined": 0.8
+  },
+  "filter_result": {
+    "passed": false,
+    "stage": "diversity",
+    "reason": "redundant",
+    "detail": "Similitud 0.96 con cand_01 (umbral 0.90).",
+    "duplicate_of": "cand_01"
+  },
+  "status": "discarded"
+}

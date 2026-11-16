@@ -1,0 +1,5 @@
+outcome,candidates,labeled_valid,labeled_invalid,not_agreed
+passed,16,16,0,0
+invalid_semantics,1,1,0,0
+low_fault_revealing,2,2,0,0
+redundant,1,1,0,0

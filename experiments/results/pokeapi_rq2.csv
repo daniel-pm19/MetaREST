@@ -1,0 +1,13 @@
+run,threshold,run_threshold,set,mrs,clusters,redundant_mrs,redundancy_rate,redundant_pairs,mean_max_similarity
+pokeapi_run1,0.95,0.975,generated,20,12,8,0.4,10,0.9542
+pokeapi_run1,0.95,0.975,pre_diversity,17,12,5,0.2941,7,0.9494
+pokeapi_run1,0.95,0.975,post_diversity,16,12,4,0.25,5,0.9464
+pokeapi_run1,0.975,0.975,generated,20,18,2,0.1,2,0.9542
+pokeapi_run1,0.975,0.975,pre_diversity,17,16,1,0.0588,1,0.9494
+pokeapi_run1,0.975,0.975,post_diversity,16,16,0,0.0,0,0.9464
+pokeapi_run2,0.95,0.975,generated,20,13,7,0.35,7,0.9493
+pokeapi_run2,0.95,0.975,pre_diversity,18,12,6,0.3333,6,0.9505
+pokeapi_run2,0.95,0.975,post_diversity,18,12,6,0.3333,6,0.9505
+pokeapi_run2,0.975,0.975,generated,20,20,0,0.0,0,0.9493
+pokeapi_run2,0.975,0.975,pre_diversity,18,18,0,0.0,0,0.9505
+pokeapi_run2,0.975,0.975,post_diversity,18,18,0,0.0,0,0.9505
