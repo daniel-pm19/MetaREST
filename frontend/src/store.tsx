@@ -1,4 +1,4 @@
-﻿import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Project } from "./api/admin";
 import { api, ApiError, DEFAULT_PROJECT_ID } from "./api/client";
 import type { Decision, DecisionInput, Run } from "./api/run";
@@ -14,7 +14,7 @@ interface Store {
   projects: Project[];
   project: Project | null;
   runs: Run[];
-  run: Run | null; // iteración activa del proyecto (la más reciente)
+  run: Run | null; // iteración seleccionada (por defecto, la más reciente)
   loaded: boolean;
   candidates: MRCandidate[];
   decisions: Decision[];
@@ -22,6 +22,7 @@ interface Store {
   starting: boolean;
   toast: Toast | null;
   selectProject: (id: string) => void;
+  selectRun: (id: string | null) => void;
   decide: (id: string, input: DecisionInput) => Promise<boolean>;
   startRun: () => Promise<void>;
   reload: () => Promise<void>;
@@ -37,6 +38,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [projectId, setProjectId] = useState<string>(() => localStorage.getItem(PROJECT_KEY) ?? DEFAULT_PROJECT_ID);
   const [runs, setRuns] = useState<Run[]>([]);
+  const [runId, setRunId] = useState<string | null>(null);
   const [candidates, setCandidates] = useState<MRCandidate[]>([]);
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -56,7 +58,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const ps = await api.listProjects();
       const pid = ps.some((p) => p.id === projectId) ? projectId : (ps[0]?.id ?? projectId);
       const rs = await api.listRuns(pid);
-      const latest = rs[rs.length - 1];
+      const latest = rs.find((r) => r.id === runId) ?? rs[rs.length - 1];
       const [cands, decs] = latest ? await Promise.all([api.listCandidates(latest.id), api.listDecisions(latest.id)]) : [[], []];
       setProjects(ps);
       if (pid !== projectId) setProjectId(pid);
@@ -69,13 +71,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoaded(true);
     }
-  }, [projectId]);
+  }, [projectId, runId]);
 
   useEffect(() => {
     reload();
   }, [reload]);
 
-  const run = runs[runs.length - 1] ?? null;
+  const run = runs.find((r) => r.id === runId) ?? runs[runs.length - 1] ?? null;
 
   // Mientras el pipeline corre, consulta el progreso (docs/INTEGRATION.md §1.1).
   const running = run?.status === "running";
@@ -88,8 +90,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const selectProject = useCallback((id: string) => {
     localStorage.setItem(PROJECT_KEY, id);
     setLoaded(false);
+    setRunId(null);
     setProjectId(id);
   }, []);
+
+  const selectRun = useCallback((id: string | null) => setRunId(id), []);
 
   const decide: Store["decide"] = useCallback(
     async (id, input) => {
@@ -112,6 +117,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setStarting(true);
     try {
       await api.startRun(projectId);
+      setRunId(null);
       await reload();
       notify("Iteración en curso: puede tardar unos minutos");
     } catch (e) {
@@ -129,8 +135,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const project = projects.find((p) => p.id === projectId) ?? null;
   const value = useMemo<Store>(
-    () => ({ projects, project, runs, run, loaded, candidates, decisions, loadError, starting, toast, selectProject, decide, startRun, reload, notify, resetDemo, dismissToast: () => setToast(null) }),
-    [projects, project, runs, run, loaded, candidates, decisions, loadError, starting, toast, selectProject, decide, startRun, reload, notify, resetDemo],
+    () => ({ projects, project, runs, run, loaded, candidates, decisions, loadError, starting, toast, selectProject, selectRun, decide, startRun, reload, notify, resetDemo, dismissToast: () => setToast(null) }),
+    [projects, project, runs, run, loaded, candidates, decisions, loadError, starting, toast, selectProject, selectRun, decide, startRun, reload, notify, resetDemo],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

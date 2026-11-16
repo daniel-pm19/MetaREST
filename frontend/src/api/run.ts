@@ -1,37 +1,14 @@
-// Tipos de Run/Decisión. Mientras el backend no publique /openapi.json (npm run gen:types) se mantienen
-// a mano, espejando RunReport/StageReport de backend/app/pipeline/orchestrator.py y docs/INTEGRATION.md §1.1.
+// Tipos de Run derivados del esquema OpenAPI del backend (npm run gen:types). Decision no tiene
+// response_model en /audit, por lo que se mantiene a mano según docs/API.md.
+import type { components } from "./schema";
 
-export type StageName = "extract" | "generate" | "semantic" | "fault_revealing" | "diversity" | "execute";
-export type StageStatus = "pending" | "running" | "done" | "failed" | "skipped";
-
-export interface StageReport {
-  name: StageName;
-  status: StageStatus;
-  duration_ms?: number | null;
-  input_count?: number | null;
-  output_count?: number | null;
-  usage?: { input_tokens: number; output_tokens: number };
-  detail?: string | null;
-}
-
-export interface RunReport {
-  stages: StageReport[];
-  provider?: string | null;
-  generation_model?: string | null;
-  verification_model?: string | null;
-  warnings: string[];
-  error?: string | null;
-}
-
-export interface Run {
-  id: string;
-  project_id: string;
-  status: "running" | "awaiting_review" | "failed";
-  report: RunReport;
-  counts: Record<string, number>;
-  round: number;
-  project_name?: string;
-}
+type Schemas = components["schemas"];
+export type StageName = Schemas["StageName"];
+export type StageStatus = Schemas["StageStatus"];
+// El servidor siempre envía stages/warnings; el esquema los marca opcionales por tener valor por defecto.
+export type StageReport = Omit<Schemas["StageReport"], "usage"> & { usage?: Partial<Schemas["TokenUsage"]> & { input_tokens: number; output_tokens: number } };
+export type RunReport = Omit<Schemas["RunReport"], "stages" | "warnings" | "fallback_used"> & { stages: StageReport[]; warnings: string[]; fallback_used?: boolean };
+export type Run = Omit<Schemas["RunOutput"], "report" | "project_name"> & { report: RunReport; project_name?: string };
 
 export interface Decision {
   id: string;

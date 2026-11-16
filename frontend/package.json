@@ -7,7 +7,10 @@
     "dev": "vite --port 5173",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "gen:types": "json2ts -i ../docs/schemas/mr_candidate.schema.json -o src/api/types.ts --unreachableDefinitions=false --additionalProperties=false"
+    "gen:types": "json2ts -i ../docs/schemas/mr_candidate.schema.json -o src/api/types.ts --unreachableDefinitions=false --additionalProperties=false && npm run gen:api",
+    "lint": "eslint src",
+    "format": "prettier --check src",
+    "gen:api": "openapi-typescript ${OPENAPI_URL:-openapi.snapshot.json} -o src/api/schema.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -16,13 +19,20 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/vite": "^4.3.5",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "eslint": "^10.15.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.14.0",
     "json-schema-to-typescript": "^16.0.0",
+    "openapi-typescript": "^7.13.0",
+    "prettier": "^3.10.1",
     "tailwindcss": "^4.3.5",
-    "typescript": "^7.0.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8"
   }
 }

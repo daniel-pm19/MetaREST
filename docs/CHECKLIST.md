@@ -14,7 +14,7 @@ Leyenda: `[x]` hecho · `[~]` parcial · `[ ]` pendiente
 |---|---|---|---|
 | **Daniel** | Pipeline IA + runner de experimentos | Casi completo | ██████████░ ~90 % |
 | **Nestor** | Plataforma backend, sut-demo, infra | Backend y demo implementados localmente; infraestructura preparada, sin desplegar | Ver bloque detallado |
-| **Isaac** | Frontend, MRs manuales, SUS | Frontend completo con datos de demostración; falta conectarlo y la parte de experimentos | ███████░░░░ ~70 % |
+| **Isaac** | Frontend, MRs manuales, SUS | Frontend completo y alineado con el backend; falta prueba end-to-end y la parte de experimentos | ███████░░░░ ~75 % |
 
 | Hito | Fecha | Estado |
 |---|---|---|
@@ -124,13 +124,15 @@ demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 - [x] **Comparar iteraciones** (2 a 4) con cambios entre ellas
 - [x] **Métricas en el resumen**: fallos confirmados y tasa de aceptación, tokens por iteración
 - [x] **Administración**: usuarios y roles, modelo LLM, umbrales del filtro y versiones de prompts
-- [x] Selector de proyecto (iteración activa = la más reciente)
+- [x] Selector de proyecto y selector de iteración (por defecto la más reciente)
+- [x] Tipos de Run/Etapas derivados de `/openapi.json` (`src/api/schema.ts`, `npm run gen:api`); `run.ts` ya no los escribe a mano
+- [x] ESLint (`npm run lint`) con reglas de hooks; TypeScript fijado en 6 porque typescript-eslint no soporta TS 7
 
 ### Pendiente — frontend
-- [ ] Selector de iteración (hoy se abre siempre la más reciente) y costo en dinero por run (hoy solo tokens)
-- [ ] **Conectar al backend real** y quitar los mocks (bloqueado por Nestor)
-- [ ] Cambiar `gen:types` para usar `/openapi.json` y retirar `src/api/run.ts` (tipos de Run escritos a mano)
-- [ ] ESLint + Prettier (`npm run lint`) y pruebas de componentes
+- [ ] Costo en dinero por run (hoy solo tokens)
+- [~] **Conectar al backend real**: rutas y formas verificadas contra `docs/API.md` y el esquema OpenAPI; falta una prueba de punta a punta con `VITE_API_URL` y Mongo, y decidir si se retiran los mocks
+- [~] `gen:api` usa `openapi.snapshot.json` (o `OPENAPI_URL`); regenerar el snapshot si cambia el backend. `Decision` sigue a mano porque `/audit` no tiene `response_model`
+- [~] Prettier configurado (`npm run format`), sin aplicar; faltan pruebas de componentes
 - [ ] Revisar la vista móvil y la accesibilidad con lector de pantalla
 
 > Los endpoints que el frontend asume y que Nestor debe confirmar: `POST /auth/login` (`{email, password}` → `{access_token, user}`), `GET /auth/me`, `GET /projects/{id}/runs`, `GET /metrics/compare?runs=`, `GET/POST/PATCH /users`, `GET/PUT /settings/llm` y `/settings/thresholds`, `GET/POST /prompts`. Ver `frontend/src/api/client.ts`.

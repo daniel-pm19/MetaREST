@@ -1,4 +1,4 @@
-﻿import { LayoutDashboard, ListChecks, Trash2, History, GitCompare, FolderKanban, Settings2, Sparkles, RotateCcw, LogOut, type LucideIcon } from "lucide-react";
+import { LayoutDashboard, ListChecks, Trash2, History, GitCompare, FolderKanban, Settings2, Sparkles, RotateCcw, LogOut, type LucideIcon } from "lucide-react";
 import { clsx } from "clsx";
 import type { ReactNode } from "react";
 import { isMock } from "../api/client";
@@ -27,7 +27,7 @@ export const navItems: Item[] = [
 ];
 
 export function Layout({ route, children }: { route: Route; children: ReactNode }) {
-  const { project, candidates, resetDemo, toast, dismissToast } = useStore();
+  const { project, runs, run, selectRun, candidates, resetDemo, toast, dismissToast } = useStore();
   const { user, can, logout } = useAuth();
   const pending = candidates.filter((c) => c.status === "pending_review").length;
   const items = navItems.filter((i) => i.allowed(can));
@@ -63,6 +63,23 @@ export function Layout({ route, children }: { route: Route; children: ReactNode 
             <span className="block text-[11px] uppercase tracking-wide text-slate-400">Proyecto activo</span>
             <span className="block truncate text-sm font-medium">{project?.name ?? "—"}</span>
           </a>
+          {runs.length > 1 && run && (
+            <label className="block px-3">
+              <span className="block text-[11px] uppercase tracking-wide text-slate-400">Iteración</span>
+              <select
+                value={run.id}
+                onChange={(e) => selectRun(e.target.value === runs[runs.length - 1].id ? null : e.target.value)}
+                className="mt-0.5 w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-sm"
+              >
+                {runs.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    Iteración {r.round}
+                    {r.id === runs[runs.length - 1].id ? " (actual)" : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           {isMock && (
             <div className="flex items-center justify-between px-3">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
