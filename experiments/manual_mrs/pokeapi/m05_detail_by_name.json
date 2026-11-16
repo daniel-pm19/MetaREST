@@ -1,0 +1,31 @@
+{
+  "title": "Id y nombre apuntan al mismo Pokémon",
+  "description": "El detalle por id y por nombre devuelve el mismo id.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/pokemon/{id}/",
+    "query_params": {},
+    "path_params": {
+      "id": 1
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "id",
+          "value": "bulbasaur",
+          "location": "path"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equality",
+    "source_selector": "$.id"
+  },
+  "transformation_logic": "Se reemplaza el id numérico por el nombre.",
+  "expected_relation": "id(1) == id(bulbasaur)",
+  "rationale": "Detecta rutas inconsistentes entre identificadores."
+}

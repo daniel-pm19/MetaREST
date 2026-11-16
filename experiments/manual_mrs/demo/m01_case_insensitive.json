@@ -1,0 +1,31 @@
+{
+  "title": "La búsqueda no distingue mayúsculas",
+  "description": "q es una subcadena sin distinguir mayúsculas: jazz y JAZZ devuelven lo mismo.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "jazz",
+      "limit": 100
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "q",
+          "value": "JAZZ",
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equality",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "Se cambia q a mayúsculas.",
+  "expected_relation": "ids(q=jazz) == ids(q=JAZZ)",
+  "rationale": "Detecta filtros sensibles a mayúsculas."
+}

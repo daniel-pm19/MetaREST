@@ -1,0 +1,39 @@
+{
+  "title": "Las categorías particionan la búsqueda",
+  "description": "vinyl y cd juntas cubren los resultados de la búsqueda sin categoría.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "jazz",
+      "limit": 100
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "add_param",
+          "param": "category",
+          "value": "vinyl"
+        }
+      ]
+    },
+    {
+      "transformations": [
+        {
+          "op": "add_param",
+          "param": "category",
+          "value": "cd"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "complete",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "Se piden las dos categorías por separado.",
+  "expected_relation": "ids(q) == ids(vinyl) ∪ ids(cd)",
+  "rationale": "Detecta categorías ignoradas o filtros incompletos."
+}

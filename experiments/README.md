@@ -147,3 +147,19 @@ Pendiente:
 3. RQ3 cuando existan `sut-demo`, su suite tradicional y las MRs manuales: `run demo` y luego `mutants`
    (y `mutants --select all --name demo_all` + `rq2 --detections` para la pregunta de redundantes).
 4. Cobertura con las MRs manuales (`coverage ... --manual manual_mrs/<api>`).
+
+## MRs manuales, RQ3 en la demo, figuras y SUS (16-nov-2026)
+
+- `manual_mrs/{demo,pokeapi,crossref}/`: 8 + 7 + 6 MRs de la línea base, escritas desde los contratos de cada API. Las 21
+  pasan contra la API original (demo local, PokeAPI y Crossref reales).
+- RQ3 en la demo (`results/demo_manual_*.csv`, suite tradicional + manuales, sin MRs de MetaREST todavía):
+
+| Combinación | Ítems | Fallos detectados |
+|---|---|---|
+| tradicional | 11 | 8/8 |
+| manual | 8 | 7/8 (no detecta `ignore_category`) |
+| tradicional + manual | 19 | 8/8 |
+
+  Falta correr `run demo` (LLM real) y repetir `mutants` con `--run raw/demo_run1.json --select accepted`.
+- Figuras: `uv run --no-project --python 3.12 --with matplotlib python figures/make_figures.py` → `figures/fig_*.png|pdf`.
+- SUS: [`sus/PROTOCOL.md`](sus/PROTOCOL.md), plantilla `sus/responses.csv` y `sus/score.py`.

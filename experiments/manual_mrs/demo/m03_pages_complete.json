@@ -1,0 +1,48 @@
+{
+  "title": "Dos mitades reconstruyen la página grande",
+  "description": "Una página de 20 equivale a la unión de las páginas 1 y 2 con límite 10.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "blues",
+      "limit": 20,
+      "page": 1
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 10,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 10,
+          "location": "query"
+        },
+        {
+          "op": "set_param",
+          "param": "page",
+          "value": 2,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "complete",
+    "source_selector": "$.results[*].id"
+  },
+  "transformation_logic": "Se divide limit entre dos y se piden ambas páginas.",
+  "expected_relation": "ids(limit=20) == ids(limit=10,p1) ∪ ids(limit=10,p2)",
+  "rationale": "Detecta saltos u omisiones entre páginas."
+}

@@ -1,0 +1,32 @@
+{
+  "title": "Pedir menos elementos devuelve a lo sumo los mismos",
+  "description": "limit=5 no devuelve más elementos que limit=10.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/type/",
+    "query_params": {
+      "limit": 10,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 5,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "count_leq",
+    "source_selector": "$.results[*].name",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se reduce limit a la mitad.",
+  "expected_relation": "|results(5)| <= |results(10)|",
+  "rationale": "Detecta límites ignorados."
+}

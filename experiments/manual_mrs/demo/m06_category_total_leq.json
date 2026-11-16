@@ -1,0 +1,32 @@
+{
+  "title": "El filtro no aumenta el total",
+  "description": "Con category el total nunca supera al de la búsqueda sin filtro.",
+  "source": {
+    "method": "GET",
+    "path": "/search",
+    "query_params": {
+      "q": "rock",
+      "limit": 10
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "add_param",
+          "param": "category",
+          "value": "cd"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "count_leq",
+    "source_selector": "$.total",
+    "measure": "value",
+    "direction": "followup_in_source"
+  },
+  "transformation_logic": "Se añade category=cd.",
+  "expected_relation": "total(q,category) <= total(q)",
+  "rationale": "Detecta filtros que amplían la búsqueda."
+}

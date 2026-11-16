@@ -1,0 +1,30 @@
+{
+  "title": "El total de tipos no depende de rows",
+  "description": "total-results no cambia al variar rows.",
+  "source": {
+    "method": "GET",
+    "path": "/types",
+    "query_params": {
+      "rows": 5
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "rows",
+          "value": 10,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equality",
+    "source_selector": "$.message.\"total-results\""
+  },
+  "transformation_logic": "Se duplica rows.",
+  "expected_relation": "total(rows=5) == total(rows=10)",
+  "rationale": "Detecta totales que dependen de la página."
+}

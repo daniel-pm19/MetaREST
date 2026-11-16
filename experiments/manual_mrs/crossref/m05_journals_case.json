@@ -1,0 +1,31 @@
+{
+  "title": "La consulta no distingue mayúsculas",
+  "description": "query=physics y PHYSICS devuelven los mismos totales.",
+  "source": {
+    "method": "GET",
+    "path": "/journals",
+    "query_params": {
+      "query": "physics",
+      "rows": 5
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "query",
+          "value": "PHYSICS",
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "equality",
+    "source_selector": "$.message.\"total-results\""
+  },
+  "transformation_logic": "Se pasa query a mayúsculas.",
+  "expected_relation": "total(physics) == total(PHYSICS)",
+  "rationale": "Detecta búsquedas sensibles a mayúsculas."
+}

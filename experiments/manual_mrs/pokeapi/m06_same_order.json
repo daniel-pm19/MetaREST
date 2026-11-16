@@ -1,0 +1,31 @@
+{
+  "title": "El orden de la lista es el mismo con otra ventana",
+  "description": "Los elementos comunes de dos ventanas aparecen en el mismo orden.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/pokemon/",
+    "query_params": {
+      "limit": 20,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 10,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "same_order",
+    "source_selector": "$.results[*].name"
+  },
+  "transformation_logic": "Se reduce limit a la mitad.",
+  "expected_relation": "order(names(20)) coincide con order(names(10))",
+  "rationale": "Detecta reordenamientos según el tamaño de página."
+}

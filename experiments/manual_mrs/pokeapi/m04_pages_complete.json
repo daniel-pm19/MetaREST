@@ -1,0 +1,47 @@
+{
+  "title": "Dos páginas reconstruyen una mayor",
+  "description": "limit=20 equivale a dos páginas de 10.",
+  "source": {
+    "method": "GET",
+    "path": "/api/v2/pokemon/",
+    "query_params": {
+      "limit": 20,
+      "offset": 0
+    }
+  },
+  "followups": [
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 10,
+          "location": "query"
+        }
+      ]
+    },
+    {
+      "transformations": [
+        {
+          "op": "set_param",
+          "param": "limit",
+          "value": 10,
+          "location": "query"
+        },
+        {
+          "op": "set_param",
+          "param": "offset",
+          "value": 10,
+          "location": "query"
+        }
+      ]
+    }
+  ],
+  "relation": {
+    "type": "complete",
+    "source_selector": "$.results[*].name"
+  },
+  "transformation_logic": "Se divide la ventana en dos.",
+  "expected_relation": "names(20) == names(0..10) ∪ names(10..20)",
+  "rationale": "Detecta saltos en la paginación."
+}
