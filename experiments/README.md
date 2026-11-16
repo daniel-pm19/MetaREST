@@ -1,117 +1,35 @@
 # Experimentos
 
-| Carpeta | Contenido | Versionado |
+Evaluación de MetaREST en tres APIs: la **API demo** (`sut-demo`, con 8 fallos inyectables), **PokeAPI** y
+**Crossref**. Todo lo que aparece en las tablas del paper sale de los CSV de [`results/`](results), generados con la
+herramienta `mrexp` de esta carpeta.
+
+## Contenido
+
+| Ruta | Contenido | Versionado |
 |---|---|---|
-| `specs/` | OpenAPI curados de PokeAPI y Crossref ([README](specs/README.md)) y el de la API demo (`demo.json`) | sí |
-| `config/experiment.json` | Configuración **congelada** del pipeline para todos los runs de experimento | sí |
-| `mrexp/` | Herramientas: runs, hoja de etiquetado, RQ1, RQ2, cobertura, runner de mutantes (RQ3) y calibración | sí |
-| `manual_mrs/<api>/` | MRs manuales de la línea base (Isaac), un `.json` por MR con el esquema `MRSpec` | sí |
-| `results/` | CSVs para el paper (`<nombre>_<métrica>.csv`) | sí |
-| `raw/` | Exportes de runs y evidencia HTTP del runner | no (`.gitignore`) |
+| [`config/experiment.json`](config/experiment.json) | Configuración **congelada** del pipeline para todos los runs | sí |
+| [`specs/`](specs) | OpenAPI curados de PokeAPI y Crossref, y el de la API demo ([README](specs/README.md)) | sí |
+| [`mrexp/`](mrexp) | Herramientas: runs, etiquetado, RQ1, RQ2, cobertura, mutantes (RQ3), cobertura de código y calibración | sí |
+| [`manual_mrs/<api>/`](manual_mrs) | MRs manuales de la línea base: 8 de la demo, 7 de PokeAPI y 6 de Crossref | sí |
+| [`results/`](results) | CSV para el paper, con nombres `<nombre>_<métrica>.csv` | sí |
+| [`figures/`](figures) | `make_figures.py` y las figuras `fig_*.png`/`.pdf` | sí |
+| [`sus/`](sus) | Protocolo SUS, plantilla de respuestas y `score.py` | sí |
+| [`LABELING.md`](LABELING.md) | Guía para etiquetar la validez de las MRs (RQ1) | sí |
+| `raw/` | Exportes de los runs y evidencia HTTP | no (`.gitignore`) |
 | `cache/` | Caché local | no |
 
-Proveedor LLM de los experimentos: **Gemini** (`docs/LLM.md`, D14).
+## Resultados
 
-## Configuración congelada
+### Runs
 
-`config/experiment.json` es un `PipelineSettings` completo (todos los campos escritos, así un cambio de los valores
-por defecto del código no altera los experimentos): generación `gemini-4-hydrogen` (esfuerzo `medium`), verificación
-`gemini-3.5-flash-lite` (esfuerzo `medium`, D15), 20 MRs por run, prompts `gen_v1` / `semcheck_v2` /
-`faultcheck_v2`, umbrales `min_semantic` 0.6, `min_fault_revealing` 0.5, similitud 0.975. **No se edita** durante los
-experimentos; si hubiera que cambiarlo, se repiten todos los runs.
+Todos los runs usan [`config/experiment.json`](config/experiment.json):
 
-## Entradas
+- generación con `gemini-4-hydrogen` y verificación con `gemini-3.5-flash-lite`, ambos con esfuerzo `medium`;
+- 20 MRs por run, con los prompts `gen_v1`, `semcheck_v2` y `faultcheck_v2`;
+- umbrales `min_semantic` 0.6, `min_fault_revealing` 0.5 y similitud 0.975.
 
-- **Exporte de un run**: JSON `{"meta", "settings", "report", "candidates"}` (`meta` es opcional) con **todas** las candidatas, incluidas las
-  descartadas. Lo escriben `backend/scripts/smoke_pipeline.py --out ...` y, cuando exista, el export del backend
-  (`GET /candidates/export`). También se acepta una lista de candidatas sola.
-- **MRs manuales**: `manual_mrs/<api>/*.json`, cada archivo con un `MRSpec` (o una lista). Mismo esquema que el
-  pipeline (`docs/MR_SCHEMA.md`), así se ejecutan con el mismo ejecutor. Una MR manual inválida detiene el runner.
-- **Tests tradicionales** (Nestor): una suite pytest que lee la URL de la SUT de `SUT_BASE_URL`.
-- **API demo** (Nestor): el runner necesita que acepte `FAULTS=<fallo>` (vacío = sin fallos), el puerto por
-  línea de comandos y que responda `GET /health`.
-
-## Comandos
-
-Desde `experiments/`, con las dependencias del backend (ver `AGENTS.md`; `run` y `rq2` además `--with fastembed`).
-
-Runs de MetaREST con la configuración congelada (llaman al LLM real; la key va en `backend/.env`):
-
-```bash
-python -m mrexp run pokeapi --name pokeapi_run1
-python -m mrexp run crossref --name crossref_run1
-python -m mrexp run demo --name demo_run1 --spec ../sut-demo/openapi.json --base-url http://localhost:8001
-```
-
-Escribe `raw/<name>.json` con todas las candidatas y un bloque `meta` (commit, sha256 del spec y de la config,
-límites del cliente HTTP). Nunca sobrescribe un run existente (`--force` para hacerlo). Si el run terminó con error o
-algún chequeo LLM falló (se habría puntuado solo con reglas, D11), lo guarda como `raw/<name>.failed.json` y hay que
-repetirlo: ese run no sirve para RQ1. Los runs de experimento quedan en `raw/` (no versionado); guárdalos también fuera
-del repo, porque las tablas del paper salen de ellos.
-
-Métricas:
-
-```bash
-python -m mrexp label-sheet raw/pokeapi_run1.json --name pokeapi
-python -m mrexp merge-labels results/pokeapi_labels.csv results/pokeapi_labels_b.csv
-python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi
-python -m mrexp rq2 raw/pokeapi_run1.json --threshold 0.95 --threshold 0.975 --name pokeapi
-python -m mrexp coverage specs/pokeapi.yaml raw/pokeapi_run1.json --manual manual_mrs/pokeapi --name pokeapi
-```
-
-RQ3, levantando la API demo una vez por fallo (puerto `--port`, `--port+1`, …):
-
-```bash
-python -m mrexp mutants --name demo \
-  --run raw/demo_run1.json --select accepted --manual manual_mrs/demo --tests ../sut-demo/tests \
-  --serve "uvicorn app.main:app --port {port}" --serve-cwd ../sut-demo \
-  --faults ignore_limit,wrong_total,page_off_by_one
-```
-
-O con servidores ya levantados: `--variant original=http://localhost:8001 --variant ignore_limit=http://localhost:8002 ...`.
-
-Calibración de la verificación (llama al LLM real; usa los smoke runs, nunca los de RQ1):
-
-```bash
-python -m mrexp calibrate --name calib \
-  --case pokeapi=raw/smoke_pokeapi_gemini.json --case crossref=raw/smoke_crossref_gemini.json \
-  --config gemini-3.5-flash-lite:low:v1 --config gemini-3.5-flash-lite:medium:v2
-```
-
-`--config` es `modelo:esfuerzo:versión de prompt`. Resultados y decisión en `docs/LLM.md` (D15).
-
-## Métricas y decisiones
-
-- **Hoja de etiquetado (RQ1)**: incluye todas las candidatas, **a ciegas** (sin decisión del filtro, scores ni
-  veredicto, porque solo se ejecutan las que pasan) y barajadas con semilla fija. Cada etiquetador llena su
-  columna (`label_a` / `label_b`: `1` válida, `0` inválida) sin ver la otra; los desacuerdos se resuelven después
-  en `label_final`. Las no ejecutables vienen con `0` prellenado (se puede cambiar). Válida = la relación debe
-  cumplirse en una implementación correcta de la API y la MR se puede ejecutar como está.
-- **RQ1**: proporción válida antes (todas) y después (las que pasan) del filtro, por etiquetador y acordada;
-  kappa de Cohen; matriz de confusión del filtro (precisión, recall de válidas, inválidas eliminadas) y, por
-  etapa de descarte, cuántas válidas se perdieron. Una candidata con desacuerdo sin resolver no entra en las tasas.
-- **RQ2**: clusters = componentes conexas del grafo «coseno ≥ umbral» sobre la misma firma estructural que usa el
-  filtro. Se reporta para las generadas, las que llegaron a diversidad y las que pasaron. Con el umbral del run,
-  las que pasaron tienen redundancia 0 por construcción; se pueden pedir otros umbrales con `--threshold`.
-  Con `--detections results/demo_all_detections.csv` (de `mutants --select all --name demo_all`) dice si alguna
-  MR descartada por redundante detectaba un fallo que ninguna seleccionada detecta.
-- **RQ3**: un ítem (MR o test) **detecta** un fallo si pasa en `original` y no pasa en la variante con ese fallo.
-  Exigir `pass` en el original descarta MRs incorrectas y tests inestables, y trata igual a MRs y tests. Por
-  defecto también cuenta un `error` (p. ej. un 500); `--strict` cuenta solo `violation` / `fail`. Salidas:
-  `*_detections.csv` (ítem × variante), `*_rq3_summary.csv` (cada combinación: tradicional, +manual, +MetaREST…)
-  y `*_rq3_fault_matrix.csv` (fallo × técnica).
-- **Cobertura**: operaciones y pares (operación, parámetro) documentados que ejercitan las peticiones concretas de
-  las MRs (todas las instancias). La cobertura de código de la API demo se mide aparte con coverage.py.
-
-## Tests
-
-`python -m pytest -q` (ver `AGENTS.md`). Usan un catálogo falso en `tests/fixtures/demo_sut.py` (solo stdlib, no es
-la API demo real) y una suite tradicional de ejemplo; el test de punta a punta levanta un servidor por variante.
-
-## Estado (13-nov-2026)
-
-Runs de experimento hechos con `config/experiment.json` (commit `7bf7693` del pipeline), los 4 utilizables
-(sin errores ni chequeos LLM fallidos):
+Los runs públicos son del commit `7bf7693` del pipeline. Ninguno tuvo errores ni chequeos LLM fallidos.
 
 | Run | Generadas | Semántica | Potencial de fallo | Redundantes | Pasan el filtro | Ejecución | Tokens |
 |---|---|---|---|---|---|---|---|
@@ -119,70 +37,42 @@ Runs de experimento hechos con `config/experiment.json` (commit `7bf7693` del pi
 | `pokeapi_run2` | 20 | 0 | −2 | 0 | 18 | 18 pass | 100k |
 | `crossref_run1` | 20 | 0 | 0 | −3 | 17 | 15 pass, 1 violation, 1 error | 154k |
 | `crossref_run2` | 20 | −1 | 0 | −6 | 13 | 13 pass | 151k |
+| `demo_run1` | 20 | −1 | −1 | −6 | 12 | 12 pass | 83k |
 
-- `crossref_run1`, violación: `GET /types` **ignora `rows` y `offset`** (siempre devuelve los 30 tipos) aunque el
-  OpenAPI los documenta. Es una discrepancia real entre spec e implementación, buen ejemplo para el paper.
-- `crossref_run1`, error: la MR agrega `filter=has-public-references:true` a `/members`, filtro que solo existe en
-  `/works` (400). MR inválida que el filtro no detectó; queda para RQ1.
-- Salidas: `results/{pokeapi,crossref}_labels.csv` (hojas de RQ1, solo `run1`: 20 MRs cada una, para que el
-  etiquetado quepa en el tiempo), `*_rq2*.csv` y `*_coverage*.csv` (los dos runs).
+- **Violación real** (`crossref_run1`): `GET /types` **ignora `rows` y `offset`** y siempre devuelve los 30 tipos,
+  aunque su OpenAPI documenta esos parámetros.
+- **Error** (`crossref_run1`): la MR agrega `filter=has-public-references:true` a `/members`, pero ese filtro solo
+  existe en `/works` y la API responde 400. Es una MR inválida que el filtro dejó pasar.
 
-RQ1 (`run1` de cada API, 2 etiquetadores, desacuerdos resueltos en `label_final`):
+### RQ1 · Validez antes y después del filtro
 
-| API | Acuerdo | Kappa | Válidas antes del filtro | Válidas después | Válidas descartadas | Inválidas descartadas |
+Se etiquetó el `run1` de cada API pública con dos etiquetadores; los desacuerdos se resolvieron en `label_final`.
+
+| API | Acuerdo | Kappa | Válidas antes | Válidas después | Válidas descartadas | Inválidas descartadas |
 |---|---|---|---|---|---|---|
-| PokeAPI | 20/20 | 1.00 (degenerada: nadie usó `0`) | 20/20 (100 %) | 16/16 (100 %) | 4 (1 semántica, 2 potencial de fallo, 1 redundante) | — |
+| PokeAPI | 20/20 | indefinida (nadie marcó `0`) | 20/20 (100 %) | 16/16 (100 %) | 4 (1 semántica, 2 potencial de fallo, 1 redundante) | — |
 | Crossref | 14/20 | 0.35 | 17/20 (85 %) | 14/17 (82 %) | 3 (redundantes) | 0 de 3 |
 
-- El filtro **no subió** la proporción de válidas: en PokeAPI no había inválidas, y en Crossref las 3 inválidas pasaron.
-  Los 6 desacuerdos de Crossref eran todos sobre si `sort=created` da un orden estable (la guía lo afirmaba al
-  principio y se corrigió a zona gris); se resolvieron con la etiqueta de A.
-- Las descartadas por potencial de fallo o redundancia no son errores de validez (miden otra cosa).
+- El filtro **no subió** la proporción de válidas: en PokeAPI no había inválidas, y en Crossref las 3 inválidas
+  pasaron.
+- Los 6 desacuerdos de Crossref eran sobre si `sort=created` da un orden estable. Se resolvieron con la precondición
+  de datos estables y desempate determinista.
+- Las descartadas por potencial de fallo o por redundancia no son errores de validez: esas etapas miden otra cosa.
 
-Pendiente:
-1. ~~Etiquetar~~ (hecho para `run1`). Para repetirlo, seguir [`LABELING.md`](LABELING.md): A en `results/<api>_labels.csv`, B en su copia
-   `results/<api>_labels_b.csv`, sin ver la del otro. Después `merge-labels`, resolver desacuerdos en `label_final`
-   y correr `rq1` por API: `python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi`.
-2. Revisar las MRs en la UI (o marcar `status` aceptadas) para `--select accepted`.
-3. ~~RQ3, cobertura con manuales, cobertura de código~~: hechos el 16-nov (ver la última sección).
+### RQ2 · Diversidad
 
-## MRs manuales, RQ3 en la demo, figuras y SUS (16-nov-2026)
+- **Redundancia**: en la demo baja de 0.35 en las generadas a 0 tras el filtro (umbral 0.975). En
+  `results/*_rq2.csv` también está con umbral 0.95.
+- **Fallo único perdido**: la MR descartada como redundante «Añadir filtro de categoría no aumenta el total» era la
+  única que detectaba `wrong_total`. El filtro la consideró duplicada de «Alargar la subcadena q no aumenta el total»
+  (similitud 0.975, justo el umbral): misma relación `count_leq` sobre `$.total`, pero distinto parámetro
+  transformado. La firma estructural da poco peso a qué parámetro se cambia.
+- Con todas las candidatas (`demo_all`), MetaREST detecta 7/8. Una MR descartada por semántica también detecta
+  `page_off_by_one`, pero ese fallo ya lo detecta una seleccionada.
 
-- `manual_mrs/{demo,pokeapi,crossref}/`: 8 + 7 + 6 MRs de la línea base, escritas desde los contratos de cada API. Las 21
-  pasan contra la API original (demo local, PokeAPI y Crossref reales).
-- RQ3 en la demo (`results/demo_manual_*.csv`, suite tradicional + manuales, sin MRs de MetaREST todavía):
+### RQ3 · Detección de fallos (API demo)
 
-| Combinación | Ítems | Fallos detectados |
-|---|---|---|
-| tradicional | 11 | 8/8 |
-| manual | 8 | 7/8 (no detecta `ignore_category`) |
-| tradicional + manual | 19 | 8/8 |
-
-  Falta correr `run demo` (LLM real) y repetir `mutants` con `--run raw/demo_run1.json --select accepted`.
-- Figuras: `uv run --no-project --python 3.12 --with matplotlib python figures/make_figures.py` → `figures/fig_*.png|pdf`.
-- SUS: [`sus/PROTOCOL.md`](sus/PROTOCOL.md), plantilla `sus/responses.csv` y `sus/score.py`.
-
-## API demo: run, RQ3, RQ2 y cobertura (16-nov-2026)
-
-Spec: `specs/demo.json` (el `/openapi.json` que sirve `sut-demo` sin fallos). Run `demo_run1` con la configuración
-congelada: 20 generadas → −1 semántica, −1 potencial de fallo, −6 redundantes → **12 pasan** el filtro, las 12 `pass`
-en el original (83k tokens). Comandos:
-
-```bash
-python -m mrexp run demo --name demo_run1 --spec specs/demo.json --base-url http://127.0.0.1:8150
-F=filter_or,wrong_total,repeat_page,drop_on_sort,ignore_limit,page_off_by_one,ignore_category,limit_dependent_order
-python -m mrexp mutants --name demo --run raw/demo_run1.json --select passed --manual manual_mrs/demo \
-  --tests ../sut-demo/tests --serve "python -m uvicorn app:create_app --factory --app-dir ../sut-demo --port {port}" --faults $F
-python -m mrexp mutants --name demo_all --run raw/demo_run1.json --select all ...   # mismas opciones
-python -m mrexp rq2 raw/demo_run1.json --threshold 0.95 --threshold 0.975 --detections results/demo_all_detections.csv --name demo
-python -m mrexp code-coverage --name demo --run raw/demo_run1.json --manual manual_mrs/demo --tests ../sut-demo/tests \
-  --serve "uvicorn app:create_app --factory --app-dir ../sut-demo --port {port}" --source ../sut-demo/app.py
-```
-
-(`mutants` y `code-coverage` necesitan además `--with fastapi --with uvicorn --with pytest`, y `code-coverage`
-`--with coverage`; `code-coverage` usa SIGTERM, así que no guarda datos en Windows.)
-
-**RQ3** (`results/demo_rq3_*.csv`; MetaREST = las 12 que pasan el filtro, todavía sin revisión del QA):
+MetaREST = las 12 que pasaron el filtro. El QA las aceptó todas, así que `--select accepted` da lo mismo.
 
 | Técnica | Ítems | Fallos detectados | No detecta |
 |---|---|---|---|
@@ -192,19 +82,15 @@ python -m mrexp code-coverage --name demo --run raw/demo_run1.json --manual manu
 | tradicional + MetaREST | 23 | 8/8 | — |
 | manual + MetaREST | 20 | 8/8 | — |
 
-- **Efecto techo**: la suite tradicional ya detecta los 8 fallos, así que en esta demo ninguna combinación puede
-  superarla. La comparación útil es por técnica y manual + MetaREST (8/8, cada una cubre el hueco de la otra).
-  Amenaza a la validez: los fallos y la suite tradicional los escribió la misma persona.
-- Ninguna MR ni test falla en el original (`items_not_passing_original = 0`).
+- **Efecto techo**: la suite tradicional ya detecta los 8 fallos, así que ninguna combinación puede superarla. Lo
+  informativo es manual + MetaREST: 8/8, cada una cubre el hueco de la otra.
+- Ningún ítem falla en el original (`items_not_passing_original = 0`).
+- Amenaza a la validez: la misma persona escribió los fallos y la suite tradicional.
 
-**RQ2** (`results/demo_rq2*.csv`): redundancia de las generadas 0.35 → 0 tras el filtro (umbral 0.975). Pero **una MR
-descartada por redundante detecta un fallo que ninguna seleccionada detecta**: «Añadir filtro de categoría no
-aumenta el total» (detecta `wrong_total`) se consideró duplicada de «Alargar la subcadena q no aumenta el total»
-(similitud 0.975, justo el umbral): misma relación `count_leq` sobre `$.total`, distinto parámetro transformado.
-La firma estructural de D12 pesa poco qué parámetro se cambia. Con todas las candidatas (`demo_all`), MetaREST
-detecta 7/8. Una MR descartada por semántica también detecta `page_off_by_one`.
+### Cobertura
 
-**Cobertura de la API** (`results/{demo,pokeapi,crossref}_coverage.csv`, operaciones / parámetros documentados):
+Operaciones y parámetros documentados que ejercitan las MRs. En PokeAPI y Crossref se suman los dos runs. En la
+demo, `/health` cuenta como operación.
 
 | API | MetaREST generadas | MetaREST seleccionadas | Manuales |
 |---|---|---|---|
@@ -212,9 +98,7 @@ detecta 7/8. Una MR descartada por semántica también detecta `page_off_by_one`
 | PokeAPI | 15/15 · 22/22 | 14/15 · 21/22 | 3/15 · 5/22 |
 | Crossref | 12/18 · 46/92 | 11/18 · 43/92 | 5/18 · 9/92 |
 
-(En la demo `/health` cuenta como operación.)
-
-**Cobertura de código de la demo** (`results/demo_code_coverage.csv`, coverage.py con ramas, en el original):
+Cobertura de código de la demo, medida con coverage.py con ramas sobre el original:
 
 | Técnica | Ítems | Líneas | Ramas | Total |
 |---|---|---|---|---|
@@ -223,27 +107,144 @@ detecta 7/8. Una MR descartada por semántica también detecta `page_off_by_one`
 | MetaREST | 12 | 51/61 | 8/18 | 75 % |
 | todas | 31 | 54/61 | 11/18 | 82 % |
 
-Las líneas no cubiertas son sobre todo las de los fallos inyectados (solo corren con `FAULTS`), así que el máximo
-alcanzable en el original es menor que 100 %.
+Casi todas las líneas sin cubrir son las de los fallos inyectados, que solo corren con `FAULTS`. Por eso el 100 % no
+es alcanzable sobre el original.
 
-## Revisión del QA en la plataforma (RQ3 con `--select accepted`, RQ4)
+### RQ4 · Esfuerzo de revisión
 
-Las MRs de un run de experimento se revisan en la UI sin regenerarlas: `backend/scripts/import_run.py` carga el export
-como una iteración más de un proyecto existente (mismos ids y `run_id`), y `backend/scripts/export_run.py` lo saca de
-nuevo con las decisiones aplicadas. Desde la raíz, con el stack de Docker Compose levantado (`infra/README.md`):
+- **Revisión**: un revisor (autor del proyecto) aceptó las 12 MRs de la demo en 8.1 min. Mediana 3.6 s, media
+  40.6 s, rango de 0.5 s a 3.7 min (`results/demo_review_times.csv`).
+- **No representativo**: 6 decisiones tardaron menos de 1.2 s, que no alcanza para leer una MR, así que estos
+  tiempos no estiman el esfuerzo de un auditor independiente.
+- **SUS**: no se alcanzó a hacer. El protocolo está listo en [`sus/PROTOCOL.md`](sus/PROTOCOL.md).
 
-1. En la UI, crear el proyecto «API demo» con `experiments/specs/demo.json` y URL base `http://sut-demo:8001`.
-2. Importar: `docker compose --env-file backend/.env -f infra/docker-compose.yml exec -T backend python -m scripts.import_run --project "API demo" < experiments/raw/demo_run1.json`
-3. Revisar las 12 pendientes como QA (aceptar o rechazar con justificación); la UI mide el tiempo de revisión.
-4. Exportar: `docker compose --env-file backend/.env -f infra/docker-compose.yml exec -T backend python -m scripts.export_run demo_run1 > experiments/raw/demo_run1_reviewed.json`
-5. RQ3 con las aceptadas: `python -m mrexp mutants --name demo_accepted --run raw/demo_run1_reviewed.json --select accepted ...`
-   (mismas opciones que `demo`). Los tiempos de revisión (RQ4) están en `GET /audit?run_id=demo_run1`.
+## Cómo reproducirlo
 
-Resultado de la revisión (16-nov-2026, 1 revisor: Daniel): **12/12 aceptadas**, 0 rechazadas. Como se aceptaron todas
-las que pasaron el filtro, RQ3 con `--select accepted` (`results/demo_accepted_*.csv`) es idéntico al de `passed`:
-MetaREST 6/8, manual + MetaREST 8/8.
+Todos los comandos se corren desde `experiments/`, con las dependencias del backend (ver [`AGENTS.md`](../AGENTS.md)).
+Algunos comandos necesitan paquetes adicionales:
 
-Tiempos de revisión (`results/demo_review_times.csv`, de la colección `decisions`): mediana 3.6 s, media 40.6 s,
-rango 0.5 s – 3.7 min. **Ojo para RQ4**: 6 decisiones consecutivas tardaron entre 0.5 y 1.2 s cada una, lo que no
-alcanza para leer una MR; con un solo revisor y esa distribución, el tiempo por MR no es representativo. Conviene
-medir RQ4 con los participantes de las sesiones SUS (`sus/PROTOCOL.md`) o reportar estos datos con esa salvedad.
+| Comandos | Paquetes adicionales |
+|---|---|
+| `run`, `rq2` | `--with fastembed` |
+| `mutants` | `--with fastapi --with uvicorn --with pytest` |
+| `code-coverage` | los de `mutants` y además `--with coverage` |
+
+`run` llama al LLM real, con la key en `backend/.env`. Las métricas no llaman a ningún LLM.
+
+### 1. Runs de MetaREST
+
+```bash
+python -m mrexp run pokeapi --name pokeapi_run1
+python -m mrexp run crossref --name crossref_run1
+python -m mrexp run demo --name demo_run1 --spec specs/demo.json --base-url http://127.0.0.1:8150
+```
+
+- **Salida**: cada run escribe `raw/<name>.json` con todas las candidatas, incluidas las descartadas, y un bloque
+  `meta` con el commit, el sha256 del spec y de la config, y los límites del cliente HTTP.
+- **Sin sobrescribir**: nunca sobrescribe un run existente; para hacerlo hay que pasar `--force`.
+- **Runs fallidos**: si el run termina con error o falla algún chequeo LLM, se guarda como `raw/<name>.failed.json`
+  y no sirve para RQ1.
+- **Copia de seguridad**: guarda también los runs fuera del repo, porque las tablas salen de ellos.
+
+### 2. Etiquetado y RQ1
+
+1. Crea la hoja de etiquetado:
+   ```bash
+   python -m mrexp label-sheet raw/pokeapi_run1.json --name pokeapi
+   ```
+2. Etiqueta siguiendo [`LABELING.md`](LABELING.md):
+   - el etiquetador A llena `results/<api>_labels.csv` y el B su copia `results/<api>_labels_b.csv`;
+   - ninguno ve la hoja del otro;
+   - la hoja es ciega (sin decisión del filtro, scores ni veredicto) y viene barajada con semilla fija.
+3. Junta las dos hojas, resuelve los desacuerdos en `label_final` y calcula RQ1:
+   ```bash
+   python -m mrexp merge-labels results/pokeapi_labels.csv results/pokeapi_labels_b.csv
+   python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi
+   ```
+
+### 3. RQ3: mutantes de la API demo
+
+El runner levanta la API demo una vez por fallo, en los puertos `--port`, `--port`+1, etc.
+
+```bash
+F=filter_or,wrong_total,repeat_page,drop_on_sort,ignore_limit,page_off_by_one,ignore_category,limit_dependent_order
+python -m mrexp mutants --name demo --run raw/demo_run1.json --select passed --manual manual_mrs/demo \
+  --tests ../sut-demo/tests --serve "python -m uvicorn app:create_app --factory --app-dir ../sut-demo --port {port}" \
+  --faults $F
+python -m mrexp mutants --name demo_all --run raw/demo_run1.json --select all ...   # mismas opciones
+```
+
+Con servidores ya levantados se puede usar `--variant original=http://localhost:8001 --variant ignore_limit=...` en
+lugar de `--serve`.
+
+### 4. RQ2 y cobertura
+
+```bash
+python -m mrexp rq2 raw/demo_run1.json --threshold 0.95 --threshold 0.975 \
+  --detections results/demo_all_detections.csv --name demo
+python -m mrexp coverage specs/pokeapi.yaml raw/pokeapi_run1.json --manual manual_mrs/pokeapi --name pokeapi
+python -m mrexp code-coverage --name demo --run raw/demo_run1.json --manual manual_mrs/demo --tests ../sut-demo/tests \
+  --serve "uvicorn app:create_app --factory --app-dir ../sut-demo --port {port}" --source ../sut-demo/app.py
+```
+
+`code-coverage` detiene el servidor con SIGTERM. En Windows no se guardan datos.
+
+### 5. Revisión del QA en la plataforma
+
+Las MRs de un run se revisan en la UI sin regenerarlas. Desde la raíz del repo, con el stack de Docker Compose
+levantado ([`infra/README.md`](../infra/README.md)):
+
+1. En la UI, crea el proyecto «API demo» con `experiments/specs/demo.json` y la URL base `http://sut-demo:8001`.
+2. Importa el run:
+   ```bash
+   docker compose --env-file backend/.env -f infra/docker-compose.yml exec -T backend \
+     python -m scripts.import_run --project "API demo" < experiments/raw/demo_run1.json
+   ```
+3. Revisa las candidatas como QA. La UI mide el tiempo de revisión.
+4. Exporta el run con las decisiones:
+   ```bash
+   docker compose --env-file backend/.env -f infra/docker-compose.yml exec -T backend \
+     python -m scripts.export_run demo_run1 > experiments/raw/demo_run1_reviewed.json
+   ```
+5. Corre RQ3 solo con las aceptadas: `mutants --name demo_accepted --run raw/demo_run1_reviewed.json --select accepted`,
+   con las mismas opciones que en el paso 3. Los tiempos de revisión salen de `GET /audit?run_id=demo_run1`.
+
+### 6. Figuras, SUS y calibración
+
+```bash
+uv run --no-project --python 3.12 --with matplotlib python figures/make_figures.py
+python sus/score.py sus/responses.csv
+python -m mrexp calibrate --name calib \
+  --case pokeapi=raw/smoke_pokeapi_gemini.json --case crossref=raw/smoke_crossref_gemini.json \
+  --config gemini-3.5-flash-lite:low:v1 --config gemini-3.5-flash-lite:medium:v2
+```
+
+La calibración llama al LLM real y usa los smoke runs, nunca los de RQ1. `--config` tiene la forma
+`modelo:esfuerzo:versión de prompt`. Los resultados y la decisión están en [`docs/LLM.md`](../docs/LLM.md) (D15).
+
+## Definiciones
+
+- **MR válida**: la relación debe cumplirse en cualquier implementación correcta de la API y la MR se puede ejecutar
+  tal como está. Las no ejecutables vienen con `0` prellenado en la hoja.
+- **RQ1**: proporción de válidas antes (todas) y después (las que pasan) del filtro, por etiquetador y acordada.
+  También se reportan el kappa de Cohen, la matriz de confusión del filtro y las válidas perdidas en cada etapa. Una
+  candidata con desacuerdo sin resolver no entra en las tasas.
+- **RQ2**: los clusters son las componentes conexas del grafo «coseno ≥ umbral», sobre la misma firma estructural que
+  usa el filtro. Con el umbral del run, las que pasan tienen redundancia 0 por construcción.
+- **RQ3**: un ítem (MR o test) **detecta** un fallo si pasa en el original y no pasa en la variante con ese fallo.
+  Por defecto también cuenta un `error` (por ejemplo un 500); con `--strict` solo cuentan `violation` y `fail`.
+  Salidas:
+  - `*_detections.csv`: ítem × variante;
+  - `*_rq3_summary.csv`: resultado de cada combinación de técnicas;
+  - `*_rq3_fault_matrix.csv`: fallo × técnica.
+- **Cobertura**: operaciones y pares (operación, parámetro) documentados que ejercitan las peticiones concretas de las
+  MRs, contando todas sus instancias.
+
+## Tests
+
+```bash
+python -m pytest -q
+```
+
+Usan un catálogo falso en `tests/fixtures/demo_sut.py`, que solo depende de la stdlib y no es la API demo real, y una
+suite tradicional de ejemplo. El test de punta a punta levanta un servidor por variante. Nunca llaman al LLM real.
