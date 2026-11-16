@@ -396,3 +396,26 @@ def test_merge_labels_joins_the_other_copy(tmp_path):
     write_csv(copy, other)
     main(["merge-labels", str(sheet), str(copy)])
     assert [r["label_b"] for r in read_csv(sheet)] == ["1", "1"]
+
+
+def test_code_coverage_per_technique(tmp_path, run):
+    pytest.importorskip("coverage")
+    run_file = write_run(tmp_path / "run.json", run)
+    manual = tmp_path / "manual"
+    manual.mkdir()
+    (manual / "m.json").write_text((EXAMPLES / "03_count_leq_filter.json").read_text(), encoding="utf-8")
+    out = tmp_path / "results"
+    main(
+        [
+            "code-coverage", "--name", "t", "--out-dir", str(out), "--port", str(free_port()),
+            "--run", str(run_file), "--manual", str(manual),
+            "--tests", str(FIXTURES / "traditional" / "check_demo_api.py"),
+            "--serve", "demo_sut --port {port}", "--serve-cwd", str(FIXTURES),
+            "--source", str(FIXTURES / "demo_sut.py"),
+        ]
+    )  # fmt: skip
+    rows = {r["group"]: r for r in read_csv(out / "t_code_coverage.csv")}
+    assert set(rows) == {"traditional", "manual", "metarest", "all"}
+    assert rows["traditional"]["items"] == "3" and rows["manual"]["items"] == "1"
+    assert all(0 < float(r["percent"]) <= 100 for r in rows.values())
+    assert int(rows["all"]["lines_covered"]) >= max(int(r["lines_covered"]) for r in rows.values())

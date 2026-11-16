@@ -1,0 +1,9 @@
+fault,detected_by_selected,detected_by_redundant,redundant_items,only_redundant_detect
+filter_or,2,0,,0
+wrong_total,0,1,574ac7a610aa4894867cb1558a24373c,1
+repeat_page,2,0,,0
+drop_on_sort,1,0,,0
+ignore_limit,4,0,,0
+page_off_by_one,1,1,155d902f82084110ac0b594aec31aa6d,0
+ignore_category,1,0,,0
+limit_dependent_order,0,0,,0

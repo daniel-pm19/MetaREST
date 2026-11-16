@@ -1,0 +1,5 @@
+group,items,not_passing_original,lines_covered,lines_total,branches_covered,branches_total,percent
+traditional,11,0,54,61,11,18,82.28
+manual,8,0,51,61,8,18,74.68
+metarest,12,0,51,61,8,18,74.68
+all,31,0,54,61,11,18,82.28

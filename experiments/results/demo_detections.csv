@@ -1,0 +1,280 @@
+technique,item_id,title,status,filter_reason,variant,outcome,detected
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_health_and_openapi,test_health_and_openapi,test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,ignore_limit,fail,1
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,page_off_by_one,fail,1
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_limit_and_first_page,test_fixed_limit_and_first_page,test,,limit_dependent_order,fail,1
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,repeat_page,fail,1
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,ignore_limit,fail,1
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,page_off_by_one,fail,1
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_fixed_second_page,test_fixed_second_page,test,,limit_dependent_order,fail,1
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,filter_or,fail,1
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,wrong_total,fail,1
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,page_off_by_one,fail,1
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,ignore_category,fail,1
+traditional,sut-demo.tests.test_traditional::test_category_and_query_case,test_category_and_query_case,test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,drop_on_sort,fail,1
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,ignore_limit,fail,1
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,page_off_by_one,fail,1
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_sorted_catalog_and_total,test_sorted_catalog_and_total,test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_unknown_query_and_missing_item,test_unknown_query_and_missing_item,test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params0],test_parameter_boundaries[params0],test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params1],test_parameter_boundaries[params1],test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params2],test_parameter_boundaries[params2],test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params3],test_parameter_boundaries[params3],test,,limit_dependent_order,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,original,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,filter_or,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,wrong_total,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,repeat_page,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,drop_on_sort,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,ignore_limit,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,page_off_by_one,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,ignore_category,pass,0
+traditional,sut-demo.tests.test_traditional::test_parameter_boundaries[params4],test_parameter_boundaries[params4],test,,limit_dependent_order,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,original,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,filter_or,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,wrong_total,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,repeat_page,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,drop_on_sort,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,ignore_limit,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,page_off_by_one,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,ignore_category,pass,0
+metarest,4dceb10ef0a54cc2a5e7f05a4c80b868,Reducir el límite conserva el orden relativo,pending_review,,limit_dependent_order,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,original,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,filter_or,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,wrong_total,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,repeat_page,violation,1
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,drop_on_sort,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,ignore_limit,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,page_off_by_one,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,ignore_category,pass,0
+metarest,903a1530ac1047ed95a9a0de1e955ca3,Páginas consecutivas son disjuntas,pending_review,,limit_dependent_order,pass,0
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,original,pass,0
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,filter_or,pass,0
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,wrong_total,pass,0
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,repeat_page,violation,1
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,drop_on_sort,pass,0
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,ignore_limit,violation,1
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,page_off_by_one,violation,1
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,ignore_category,pass,0
+metarest,2ff4925ab1f14684be1932d01cc212a6,Dos páginas de tamaño 5 completan una página de tamaño 10,pending_review,,limit_dependent_order,pass,0
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,original,pass,0
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,filter_or,violation,1
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,wrong_total,pass,0
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,repeat_page,pass,0
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,drop_on_sort,pass,0
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,ignore_limit,violation,1
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,page_off_by_one,pass,0
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,ignore_category,violation,1
+metarest,a120f383cd644fe3b9bb4a4584f73b84,Partición completa por categoría vinyl y cd,pending_review,,limit_dependent_order,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,original,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,filter_or,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,wrong_total,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,repeat_page,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,drop_on_sort,violation,1
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,ignore_limit,violation,1
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,page_off_by_one,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,ignore_category,pass,0
+metarest,2ab815729dc4419fa6db0224c76c9b46,Cambiar el modo de ordenación conserva todos los resultados,pending_review,,limit_dependent_order,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,original,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,filter_or,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,wrong_total,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,repeat_page,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,drop_on_sort,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,ignore_limit,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,page_off_by_one,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,ignore_category,pass,0
+metarest,2cb014d347ec45f2a3201427aee70741,Insensibilidad a mayúsculas y minúsculas en q,pending_review,,limit_dependent_order,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,original,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,filter_or,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,wrong_total,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,repeat_page,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,drop_on_sort,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,ignore_limit,violation,1
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,page_off_by_one,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,ignore_category,pass,0
+metarest,b730fe3c8d694d8dbdd91cf458a1478f,Añadir filtro de categoría devuelve un subconjunto,pending_review,,limit_dependent_order,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,original,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,filter_or,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,wrong_total,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,repeat_page,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,drop_on_sort,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,ignore_limit,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,page_off_by_one,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,ignore_category,pass,0
+metarest,1908f87f35f34c3e87ffcc211f5eb657,Alargar la subcadena de búsqueda q no aumenta el total,pending_review,,limit_dependent_order,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,original,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,filter_or,violation,1
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,wrong_total,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,repeat_page,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,drop_on_sort,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,ignore_limit,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,page_off_by_one,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,ignore_category,pass,0
+metarest,3e0a01c28cce4e2a818bf2646c51d016,Eliminar el filtro q amplía los resultados,pending_review,,limit_dependent_order,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,original,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,filter_or,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,wrong_total,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,repeat_page,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,drop_on_sort,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,ignore_limit,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,page_off_by_one,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,ignore_category,pass,0
+metarest,c7b72a98d65c494b82d78699a7f9a847,Eliminar category no reduce la cantidad de resultados devueltos,pending_review,,limit_dependent_order,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,original,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,filter_or,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,wrong_total,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,repeat_page,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,drop_on_sort,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,ignore_limit,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,page_off_by_one,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,ignore_category,pass,0
+metarest,11fa23f17c8a43a3b5d3a685876c6aec,Valor por defecto de limit=20,pending_review,,limit_dependent_order,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,original,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,filter_or,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,wrong_total,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,repeat_page,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,drop_on_sort,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,ignore_limit,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,page_off_by_one,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,ignore_category,pass,0
+metarest,f029a119a94a4666bf920ffbdd6c5885,Cambiar de página no modifica el total,pending_review,,limit_dependent_order,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,original,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,filter_or,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,wrong_total,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,repeat_page,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,drop_on_sort,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,ignore_limit,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,page_off_by_one,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,ignore_category,pass,0
+manual,m01_case_insensitive,La búsqueda no distingue mayúsculas,manual,,limit_dependent_order,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,original,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,filter_or,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,wrong_total,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,repeat_page,violation,1
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,drop_on_sort,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,ignore_limit,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,page_off_by_one,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,ignore_category,pass,0
+manual,m02_pages_disjoint,Páginas consecutivas no se solapan,manual,,limit_dependent_order,pass,0
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,original,pass,0
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,filter_or,pass,0
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,wrong_total,pass,0
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,repeat_page,violation,1
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,drop_on_sort,pass,0
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,ignore_limit,violation,1
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,page_off_by_one,violation,1
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,ignore_category,pass,0
+manual,m03_pages_complete,Dos mitades reconstruyen la página grande,manual,,limit_dependent_order,violation,1
+manual,m04_total_stable_limit,El total no depende del límite,manual,,original,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,filter_or,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,wrong_total,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,repeat_page,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,drop_on_sort,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,ignore_limit,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,page_off_by_one,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,ignore_category,pass,0
+manual,m04_total_stable_limit,El total no depende del límite,manual,,limit_dependent_order,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,original,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,filter_or,violation,1
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,wrong_total,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,repeat_page,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,drop_on_sort,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,ignore_limit,violation,1
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,page_off_by_one,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,ignore_category,pass,0
+manual,m05_category_subset,Filtrar por categoría reduce los resultados,manual,,limit_dependent_order,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,original,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,filter_or,violation,1
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,wrong_total,violation,1
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,repeat_page,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,drop_on_sort,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,ignore_limit,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,page_off_by_one,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,ignore_category,pass,0
+manual,m06_category_total_leq,El filtro no aumenta el total,manual,,limit_dependent_order,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,original,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,filter_or,violation,1
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,wrong_total,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,repeat_page,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,drop_on_sort,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,ignore_limit,violation,1
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,page_off_by_one,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,ignore_category,pass,0
+manual,m07_category_partition,Las categorías particionan la búsqueda,manual,,limit_dependent_order,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,original,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,filter_or,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,wrong_total,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,repeat_page,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,drop_on_sort,violation,1
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,ignore_limit,violation,1
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,page_off_by_one,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,ignore_category,pass,0
+manual,m08_sort_equivalent,Cambiar el orden conserva el conjunto,manual,,limit_dependent_order,pass,0

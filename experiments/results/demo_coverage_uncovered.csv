@@ -1,0 +1,6 @@
+group,kind,method,path,param
+metarest_generated,operation,GET,/health,
+metarest_selected,operation,GET,/health,
+metarest_selected,operation,GET,/items/{item_id},
+manual,operation,GET,/health,
+manual,operation,GET,/items/{item_id},

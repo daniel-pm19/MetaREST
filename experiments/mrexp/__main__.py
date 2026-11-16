@@ -7,6 +7,7 @@
     rq2          redundancy before/after the diversity filter (+ unique detections of redundant MRs)
     coverage     operations / parameters of the spec exercised by the MRs
     mutants      detection matrix on the demo API's fault variants (RQ3)
+    code-coverage  demo-API code coverage (coverage.py) per technique, on the original
     calibrate    compare verification models / thresholds on execution-labeled MRs (calls the real LLM)
 
 CSVs go to experiments/results/ (versioned); raw execution evidence to experiments/raw/ (git-ignored).
@@ -316,6 +317,30 @@ async def cmd_mutants(args: argparse.Namespace) -> None:
     print(f"evidencia HTTP → {raw}")
 
 
+async def cmd_code_coverage(args: argparse.Namespace) -> None:
+    from mrexp.codecov import Group, measure
+
+    groups = [Group("traditional", tests=args.tests)] if args.tests else []
+    manual = load_manual_mrs(args.manual) if args.manual else []
+    metarest = select_candidates(load_runs(args.run), args.select) if args.run else []
+    if manual:
+        groups.append(Group("manual", mrs=manual))
+    if metarest:
+        groups.append(Group("metarest", mrs=metarest))
+    if len(groups) > 1:
+        groups.append(Group("all", mrs=manual + metarest, tests=args.tests))
+    if not groups:
+        raise SystemExit("nada que ejecutar: pasa --tests, --manual y/o --run")
+    factory = default_client_factory(timeout=args.timeout, max_concurrency=args.concurrency)
+    rows = await measure(
+        groups, args.serve, args.source, factory, port=args.port, health_path=args.health, cwd=args.serve_cwd,
+        concurrency=args.concurrency, pytest_cmd=args.pytest_cmd,
+    )  # fmt: skip
+    write_csv(_out(args, "code_coverage"), rows)
+    _print_rows(rows, ["group", "items", "not_passing_original", "lines_covered", "lines_total", "percent"])
+    print(f"→ {_out(args, 'code_coverage')}")
+
+
 async def cmd_calibrate(args: argparse.Namespace) -> None:
     from app.pipeline.context_extractor import extract_context
     from app.pipeline.llm import LLMSettings, create_provider
@@ -432,6 +457,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--concurrency", type=int, default=4)
     p.add_argument("--raw-dir", type=Path, default=RAW, help="where the HTTP evidence JSON goes (git-ignored)")
 
+    p = sub.add_parser("code-coverage", parents=[common], help="demo-API code coverage per technique (coverage.py)")
+    p.add_argument("--serve", required=True, help='module command with {port}, e.g. "uvicorn app:app --port {port}"')
+    p.add_argument("--source", type=Path, required=True, help="code to measure (e.g. ../sut-demo)")
+    p.add_argument("--serve-cwd", type=Path)
+    p.add_argument("--run", nargs="*", type=Path, default=[])
+    p.add_argument("--select", choices=["accepted", "passed", "all"], default="passed")
+    p.add_argument("--manual", type=Path)
+    p.add_argument("--tests", type=Path)
+    p.add_argument("--pytest-cmd")
+    p.add_argument("--port", type=int, default=8200)
+    p.add_argument("--health", default="/health")
+    p.add_argument("--timeout", type=float, default=10.0)
+    p.add_argument("--concurrency", type=int, default=4)
+
     p = sub.add_parser("calibrate", parents=[common], help="verification model / threshold calibration (real LLM)")
     p.add_argument("--case", action="append", required=True, help="preset=run.json, e.g. pokeapi=raw/smoke.json")
     p.add_argument("--config", action="append", required=True, help="model:effort, e.g. gemini-4-hydrogen:low")
@@ -459,6 +498,8 @@ def main(argv: list[str] | None = None) -> None:
             cmd_coverage(args)
         case "mutants":
             asyncio.run(cmd_mutants(args))
+        case "code-coverage":
+            asyncio.run(cmd_code_coverage(args))
         case "calibrate":
             asyncio.run(cmd_calibrate(args))
 

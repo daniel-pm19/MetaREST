@@ -2,7 +2,7 @@
 
 | Carpeta | Contenido | Versionado |
 |---|---|---|
-| `specs/` | OpenAPI curados de PokeAPI y Crossref ([README](specs/README.md)) | sí |
+| `specs/` | OpenAPI curados de PokeAPI y Crossref ([README](specs/README.md)) y el de la API demo (`demo.json`) | sí |
 | `config/experiment.json` | Configuración **congelada** del pipeline para todos los runs de experimento | sí |
 | `mrexp/` | Herramientas: runs, hoja de etiquetado, RQ1, RQ2, cobertura, runner de mutantes (RQ3) y calibración | sí |
 | `manual_mrs/<api>/` | MRs manuales de la línea base (Isaac), un `.json` por MR con el esquema `MRSpec` | sí |
@@ -144,9 +144,7 @@ Pendiente:
    `results/<api>_labels_b.csv`, sin ver la del otro. Después `merge-labels`, resolver desacuerdos en `label_final`
    y correr `rq1` por API: `python -m mrexp rq1 raw/pokeapi_run1.json --labels results/pokeapi_labels.csv --name pokeapi`.
 2. Revisar las MRs en la UI (o marcar `status` aceptadas) para `--select accepted`.
-3. RQ3 cuando existan `sut-demo`, su suite tradicional y las MRs manuales: `run demo` y luego `mutants`
-   (y `mutants --select all --name demo_all` + `rq2 --detections` para la pregunta de redundantes).
-4. Cobertura con las MRs manuales (`coverage ... --manual manual_mrs/<api>`).
+3. ~~RQ3, cobertura con manuales, cobertura de código~~: hechos el 16-nov (ver la última sección).
 
 ## MRs manuales, RQ3 en la demo, figuras y SUS (16-nov-2026)
 
@@ -163,3 +161,67 @@ Pendiente:
   Falta correr `run demo` (LLM real) y repetir `mutants` con `--run raw/demo_run1.json --select accepted`.
 - Figuras: `uv run --no-project --python 3.12 --with matplotlib python figures/make_figures.py` → `figures/fig_*.png|pdf`.
 - SUS: [`sus/PROTOCOL.md`](sus/PROTOCOL.md), plantilla `sus/responses.csv` y `sus/score.py`.
+
+## API demo: run, RQ3, RQ2 y cobertura (16-nov-2026)
+
+Spec: `specs/demo.json` (el `/openapi.json` que sirve `sut-demo` sin fallos). Run `demo_run1` con la configuración
+congelada: 20 generadas → −1 semántica, −1 potencial de fallo, −6 redundantes → **12 pasan** el filtro, las 12 `pass`
+en el original (83k tokens). Comandos:
+
+```bash
+python -m mrexp run demo --name demo_run1 --spec specs/demo.json --base-url http://127.0.0.1:8150
+F=filter_or,wrong_total,repeat_page,drop_on_sort,ignore_limit,page_off_by_one,ignore_category,limit_dependent_order
+python -m mrexp mutants --name demo --run raw/demo_run1.json --select passed --manual manual_mrs/demo \
+  --tests ../sut-demo/tests --serve "python -m uvicorn app:create_app --factory --app-dir ../sut-demo --port {port}" --faults $F
+python -m mrexp mutants --name demo_all --run raw/demo_run1.json --select all ...   # mismas opciones
+python -m mrexp rq2 raw/demo_run1.json --threshold 0.95 --threshold 0.975 --detections results/demo_all_detections.csv --name demo
+python -m mrexp code-coverage --name demo --run raw/demo_run1.json --manual manual_mrs/demo --tests ../sut-demo/tests \
+  --serve "uvicorn app:create_app --factory --app-dir ../sut-demo --port {port}" --source ../sut-demo/app.py
+```
+
+(`mutants` y `code-coverage` necesitan además `--with fastapi --with uvicorn --with pytest`, y `code-coverage`
+`--with coverage`; `code-coverage` usa SIGTERM, así que no guarda datos en Windows.)
+
+**RQ3** (`results/demo_rq3_*.csv`; MetaREST = las 12 que pasan el filtro, todavía sin revisión del QA):
+
+| Técnica | Ítems | Fallos detectados | No detecta |
+|---|---|---|---|
+| tradicional | 11 | 8/8 | — |
+| manual | 8 | 7/8 | `ignore_category` |
+| MetaREST | 12 | 6/8 | `wrong_total`, `limit_dependent_order` |
+| tradicional + MetaREST | 23 | 8/8 | — |
+| manual + MetaREST | 20 | 8/8 | — |
+
+- **Efecto techo**: la suite tradicional ya detecta los 8 fallos, así que en esta demo ninguna combinación puede
+  superarla. La comparación útil es por técnica y manual + MetaREST (8/8, cada una cubre el hueco de la otra).
+  Amenaza a la validez: los fallos y la suite tradicional los escribió la misma persona.
+- Ninguna MR ni test falla en el original (`items_not_passing_original = 0`).
+
+**RQ2** (`results/demo_rq2*.csv`): redundancia de las generadas 0.35 → 0 tras el filtro (umbral 0.975). Pero **una MR
+descartada por redundante detecta un fallo que ninguna seleccionada detecta**: «Añadir filtro de categoría no
+aumenta el total» (detecta `wrong_total`) se consideró duplicada de «Alargar la subcadena q no aumenta el total»
+(similitud 0.975, justo el umbral): misma relación `count_leq` sobre `$.total`, distinto parámetro transformado.
+La firma estructural de D12 pesa poco qué parámetro se cambia. Con todas las candidatas (`demo_all`), MetaREST
+detecta 7/8. Una MR descartada por semántica también detecta `page_off_by_one`.
+
+**Cobertura de la API** (`results/{demo,pokeapi,crossref}_coverage.csv`, operaciones / parámetros documentados):
+
+| API | MetaREST generadas | MetaREST seleccionadas | Manuales |
+|---|---|---|---|
+| demo | 2/3 · 6/6 | 1/3 · 5/6 | 1/3 · 5/6 |
+| PokeAPI | 15/15 · 22/22 | 14/15 · 21/22 | 3/15 · 5/22 |
+| Crossref | 12/18 · 46/92 | 11/18 · 43/92 | 5/18 · 9/92 |
+
+(En la demo `/health` cuenta como operación.)
+
+**Cobertura de código de la demo** (`results/demo_code_coverage.csv`, coverage.py con ramas, en el original):
+
+| Técnica | Ítems | Líneas | Ramas | Total |
+|---|---|---|---|---|
+| tradicional | 11 | 54/61 | 11/18 | 82 % |
+| manual | 8 | 51/61 | 8/18 | 75 % |
+| MetaREST | 12 | 51/61 | 8/18 | 75 % |
+| todas | 31 | 54/61 | 11/18 | 82 % |
+
+Las líneas no cubiertas son sobre todo las de los fallos inyectados (solo corren con `FAULTS`), así que el máximo
+alcanzable en el original es menor que 100 %.

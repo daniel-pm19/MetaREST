@@ -38,3 +38,9 @@ Por qué se eligieron estas APIs: [`docs/SUTS.md`](../../docs/SUTS.md).
 
 Crossref anuncia `x-rate-limit-limit: 1`, `x-rate-limit-interval: 1s` y `x-concurrency-limit: 1` en su pool
 público. El ejecutor (`SUTClient`) se identifica con un User-Agent genérico de MetaREST.
+
+## API demo (`demo.json`)
+
+Copia sin cambios del `/openapi.json` que sirve `sut-demo` sin fallos (versión 0.1.0, guardada el 16-nov-2026), para que
+los runs de la demo usen siempre el mismo spec. Si `sut-demo` cambia su contrato, hay que volver a guardarlo y repetir el
+run.
