@@ -22,6 +22,53 @@ solo inserta un correo inexistente; no cambia contraseñas ni roles existentes.
 Las claves del LLM y los headers de la SUT se leen del entorno/`.env`, nunca se
 guardan en los documentos de configuración ni se envían al navegador.
 
+### Proveedor inicial y actualización de bases existentes
+
+La plataforma crea su configuración inicial con Gemini y los modelos, esfuerzo y
+límite de peticiones definidos para ese proveedor por el pipeline. La configuración
+genérica de los experimentos se mantiene independiente. Una base existente no se
+sobrescribe al reiniciar: conserva la elección del administrador.
+
+Para cambiar una base existente a Gemini, desde `backend` y con MongoDB activo:
+
+```powershell
+# Vista previa: no cambia una configuración existente.
+uv run python -m scripts.configure_gemini
+# Aplicar explícitamente y luego refrescar Admin en el frontend.
+uv run python -m scripts.configure_gemini --apply
+```
+
+El comando no llama al LLM ni requiere una API key. Cambia los campos propios del
+proveedor (modelos, esfuerzo de verificación y RPM), conserva opciones generales
+como el número de candidatas, los filtros y los prompts, y no modifica snapshots
+de runs anteriores. Si Gemini ya estaba elegido, respeta sus modelos personalizados.
+Si Gemini conserva nombres de modelos Claude de un cambio incompleto de proveedor,
+el comando repara esos nombres. Los endpoints de configuración rechazan combinaciones
+conocidas incompatibles: al cambiar de proveedor, actualiza también ambos modelos.
+Configura `GEMINI_API_KEY` localmente antes de iniciar una ejecución real y reinicia
+el backend para que cargue la clave.
+
+### Credenciales aisladas por proyecto
+
+Un proyecto sin `auth_env_key` siempre usa headers de autenticación vacíos. No hay
+respaldo global de credenciales. Para una API privada configura, por ejemplo:
+
+```dotenv
+SUT_CATALOG_HEADERS={"Authorization":"Bearer REEMPLAZAR_LOCALMENTE"}
+```
+
+En ese proyecto fija `auth_env_key` a `SUT_CATALOG_HEADERS`. Otro proyecto puede
+apuntar a otra variable y una API pública debe dejar el campo sin configurar.
+Si la variable declarada falta, está vacía o contiene JSON/headers inválidos, el
+run falla antes de crear el proveedor LLM o el cliente SUT. El mensaje identifica
+la variable, pero no incluye su contenido. Una variable global antigua que quede
+en el entorno no se usa implícitamente.
+
+En Docker, añade cada variable de proyecto explícitamente a `environment` del
+servicio backend, además de definirla en el archivo utilizado por Compose; el
+archivo de interpolación de Compose no transmite automáticamente todas sus variables
+al contenedor. Evita compartir una misma variable entre APIs con credenciales distintas.
+
 Pruebas sin servicios externos: `uv run pytest -q`. Las pruebas de plataforma usan
 `mongomock-motor`; con `TEST_MONGODB_URI` usan Mongo real en una base temporal por
 prueba y la eliminan al terminar. CI configura esta variable para Mongo 7.

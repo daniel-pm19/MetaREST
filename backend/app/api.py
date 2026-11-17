@@ -331,10 +331,20 @@ async def llm_settings(user: Admin):
     return (await SettingsRecord.get("pipeline")).pipeline.llm
 
 
+def validate_provider_models(settings: LLMSettings) -> None:
+    for model in (settings.generation_model, settings.verification_model):
+        name = model.removeprefix("models/")
+        if (settings.provider == "gemini" and name.startswith("claude-")) or (
+            settings.provider == "anthropic" and name.startswith("gemini-")
+        ):
+            raise HTTPException(422, "Los modelos no corresponden al proveedor; actualiza ambos modelos al cambiarlo")
+
+
 @router.put("/settings/llm", response_model=LLMSettings, tags=["settings"])
 async def save_llm(body: LLMSettings, user: Admin):
     if body.provider not in {"anthropic", "gemini"}:
         raise HTTPException(422, "Solo Anthropic y Gemini están habilitados para ejecuciones reales")
+    validate_provider_models(body)
     record = await SettingsRecord.get("pipeline")
     record.pipeline.llm = body
     await record.replace()
@@ -430,6 +440,7 @@ async def pipeline_settings(user: Admin):
 async def save_pipeline_settings(body: PipelineSettings, user: Admin):
     if body.llm.provider not in {"anthropic", "gemini"}:
         raise HTTPException(422, "Proveedor no habilitado")
+    validate_provider_models(body.llm)
     for prompt_id in (body.generation_prompt, body.filters.semantic_prompt, body.filters.fault_prompt):
         if prompt_id not in available_prompts() and await PromptRecord.get(prompt_id) is None:
             raise HTTPException(422, "Prompt no encontrado")
