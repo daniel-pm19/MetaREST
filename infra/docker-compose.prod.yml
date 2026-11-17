@@ -1,11 +1,20 @@
+name: metarest
 services:
   mongo:
     image: mongo:7
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?Configura MONGO_ROOT_USER}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?Configura MONGO_ROOT_PASSWORD}
+      MONGO_APP_USER: ${MONGO_APP_USER:-metarest_app}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?Configura MONGO_APP_PASSWORD}
     volumes:
       - mongo-data:/data/db
+      - ./mongo/init-metarest.js:/docker-entrypoint-initdb.d/10-metarest.js:ro
+    healthcheck:
+      test: [CMD-SHELL, 'mongosh --quiet --username "$$MONGO_INITDB_ROOT_USERNAME" --password "$$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin --eval "db.adminCommand(\"ping\").ok"']
+      interval: 5s
+      timeout: 5s
+      retries: 30
     restart: unless-stopped
   backend:
     image: ghcr.io/${GHCR_OWNER:?Configura GHCR_OWNER}/metarest-backend:${IMAGE_TAG:-latest}
@@ -21,7 +30,9 @@ services:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - fastembed-cache:/data/fastembed
-    depends_on: [mongo]
+    depends_on:
+      mongo:
+        condition: service_healthy
     healthcheck:
       test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 10s
@@ -41,6 +52,12 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    restart: unless-stopped
+  sut-demo:
+    image: ghcr.io/${GHCR_OWNER:?Configura GHCR_OWNER}/metarest-sut-demo:${IMAGE_TAG:-latest}
+    profiles: [demo]
+    environment:
+      FAULTS: ""
     restart: unless-stopped
 volumes:
   mongo-data:

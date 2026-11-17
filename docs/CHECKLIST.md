@@ -97,13 +97,13 @@ demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 - [x] Suite pytest tradicional (`SUT_BASE_URL`) para la demo (11 casos; original y 8 variantes comprobados). Las suites públicas opcionales siguen pendientes
 
 ### Infraestructura y despliegue
-- [~] `infra/docker-compose.yml`: servicios y volúmenes definidos; `compose config` correcto; pendiente probar el arranque completo
+- [x] `infra/docker-compose.yml`: build y arranque completo comprobados el 16-nov-2026; frontend en 8082, proxy, login, red backend→demo y persistencia de Mongo tras recrear contenedores
 - [~] `ci.yml` preparado: ruff, pytest con Mongo real en CI, experimentos y build frontend; pendiente ejecutarlo en GitHub
 - [ ] Instancia EC2 t3.medium, security group y subdominio DuckDNS
 - [~] `docker-compose.prod.yml` y Nginx HTTPS preparados; manifiesto validado; faltan dominio, certificado y despliegue real
 - [~] `deploy.yml` preparado: CI exitoso en main → GHCR → SSH verificado a EC2; sin ejecutar
 - [~] Script mongodump→S3 y regla de retención de 7 días preparados; falta configurar bucket, cron, restauración y CloudWatch
-- [~] Volumen fastembed declarado; pendiente verificar descarga/persistencia con Docker
+- [x] Volumen fastembed verificado en Docker: descarga y embedding de 384 dimensiones; tras recrear contenedores carga offline desde la caché persistente
 
 ---
 
