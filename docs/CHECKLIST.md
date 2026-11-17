@@ -143,8 +143,8 @@ demo. Docker Desktop no proporcionó un motor disponible en este equipo.
 
 ### Pendiente — experimentos y paper
 - [x] **MRs manuales**: 8 (demo), 7 (PokeAPI) y 6 (Crossref) en `experiments/manual_mrs/`, escritas desde el OpenAPI y el README de la demo sin mirar MRs generadas; las 21 pasan en la API original. Salvedad: ya conocía los nombres de los fallos inyectados de la demo
-- [ ] Etiquetado de validez (RQ1) como segundo etiquetador, según `experiments/LABELING.md`
-- [~] **SUS**: protocolo, tareas, cuestionario en español, plantilla de respuestas y script de puntuación en `experiments/sus/`. Falta agendar y ejecutar las sesiones (≥ 5 participantes)
+- [x] Etiquetado de validez (RQ1) como segundo etiquetador (`label_b`) en PokeAPI y Crossref; acuerdo, kappa y resolución en `experiments/README.md`. Pendiente solo si se quiere etiquetar también el run de la demo
+- [~] **SUS**: protocolo, tareas, cuestionario en español, plantilla de respuestas y script de puntuación en `experiments/sus/`. `responses.csv` solo tiene el encabezado: faltan las sesiones con ≥ 5 personas reales (no se pueden simular) y reportar n, media, mediana y rango
 - [x] Figuras del paper: `experiments/figures/make_figures.py` genera RQ1, RQ2, cobertura y RQ3 (PNG y PDF)
 
 ---
