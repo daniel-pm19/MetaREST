@@ -14,6 +14,16 @@ Frontend conectado al backend: `http://localhost:8080`. Backend:
 Dentro de Docker registra la URL de la demo como `http://sut-demo:8001`; una URL
 `localhost` dentro del backend apuntaría al propio contenedor backend.
 
+Si el puerto web 8080 ya está ocupado, elige otro antes del comando de arranque:
+
+```powershell
+$env:FRONTEND_PORT = "8082"
+docker compose --env-file backend/.env -f infra/docker-compose.yml up --build -d --wait
+```
+
+En ese caso abre `http://127.0.0.1:8082`. Usa el mismo valor de `FRONTEND_PORT`
+en los siguientes comandos Compose de esa instalación.
+
 Mongo no publica puertos; los datos y el modelo fastembed usan volúmenes. La primera
 ejecución con LLM necesita la API key y descargar el modelo de embeddings. El
 frontend se construye con `VITE_API_URL=/api`, sin cambiar el código de Isaac.
@@ -54,6 +64,18 @@ Verificar restauración en una base separada antes de considerar cerrado el back
 CloudWatch requiere agente, permisos y alarmas: sigue pendiente de configurar.
 
 ## Verificación
+
+Comprobación local del 16-nov-2026: las tres imágenes propias construyen, los cuatro
+servicios arrancan y el frontend en 8082 permite autenticar contra el backend a
+través de Nginx. El backend alcanza `sut-demo:8001`. Al recrear los contenedores
+con `--force-recreate`, un proyecto conserva su ID en MongoDB; el modelo
+`BAAI/bge-small-en-v1.5` carga offline desde el volumen y produce 384 dimensiones.
+La prueba no llamó al LLM. El contenedor ajeno que ocupaba 8080 quedó intacto.
+
+MongoDB de Compose usa su propio volumen y no comparte la base del servicio MongoDB
+de Windows. Los runs revisados en la instalación nativa se pueden trasladar con los
+scripts de exportación/importación del equipo. En Docker se registró el proyecto
+`Comprobacion Docker - API demo` con la URL interna correcta.
 
 Se puede ejecutar `docker compose ... config --quiet` sin motor Docker para validar
 los manifiestos. Esto no comprueba que las imágenes construyan o que los servicios

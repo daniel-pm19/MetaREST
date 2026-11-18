@@ -19,7 +19,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Configura JWT_SECRET en backend/.env}
       ADMIN_EMAIL: ${ADMIN_EMAIL:?Configura ADMIN_EMAIL en backend/.env}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Configura ADMIN_PASSWORD en backend/.env}
-      CORS_ORIGINS: '["http://localhost:8080"]'
+      CORS_ORIGINS: '["http://localhost:${FRONTEND_PORT:-8080}","http://127.0.0.1:${FRONTEND_PORT:-8080}"]'
       FASTEMBED_CACHE_DIR: /data/fastembed
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
@@ -52,7 +52,7 @@ services:
       args:
         VITE_API_URL: /api
     ports:
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:${FRONTEND_PORT:-8080}:80"
     depends_on:
       backend:
         condition: service_healthy

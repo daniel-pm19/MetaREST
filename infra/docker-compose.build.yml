@@ -1,0 +1,17 @@
+# First deployment can build on EC2 before GHCR/Actions credentials are configured.
+# Use together with docker-compose.prod.yml (not independently).
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+  frontend:
+    build:
+      context: ..
+      dockerfile: infra/frontend.Dockerfile
+      args:
+        VITE_API_URL: /api
+  sut-demo:
+    build:
+      context: ..
+      dockerfile: sut-demo/Dockerfile
