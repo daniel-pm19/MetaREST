@@ -1,9 +1,7 @@
 """Platform integration with the team's pipeline; no duplicated inference/executor."""
 
 import asyncio
-import json
 import logging
-import os
 from collections import Counter
 
 from app.models.mr import CandidateStatus
@@ -13,6 +11,7 @@ from app.pipeline.executor import SUTClient
 from app.pipeline.llm import create_provider
 from app.pipeline.orchestrator import StageStatus, run_pipeline
 from app.pipeline.prompts import PromptTemplate
+from app.sut_auth import SUTAuthError, project_headers
 
 logger = logging.getLogger(__name__)
 
@@ -39,9 +38,7 @@ async def execute_run(app, run_id: str):
                 {"$set": {"report": report.model_dump(mode="json")}}
             )
 
-        headers = json.loads(os.getenv(project.get("auth_env_key") or "SUT_HEADERS_JSON", "{}"))
-        if not isinstance(headers, dict) or any(not isinstance(v, str) for v in headers.values()):
-            raise ValueError("Headers SUT inválidos")
+        headers = project_headers(project.get("auth_env_key"))
         model = run.settings.filters.embedding_model
         if model not in app.state.embedders:
             app.state.embedders[model] = FastEmbedEmbedder(model, cache_dir=app.state.settings.fastembed_cache_dir)
@@ -87,6 +84,8 @@ async def execute_run(app, run_id: str):
     except asyncio.CancelledError:
         await fail_run(run_id, "Ejecución interrumpida al detener el servidor")
         raise
+    except SUTAuthError as exc:
+        await fail_run(run_id, str(exc))
     except Exception:
         # SDK/network exceptions can contain secrets: keep them out of the API/report.
         logger.error("Run %s failed outside the pipeline", run_id)

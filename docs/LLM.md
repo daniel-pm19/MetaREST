@@ -187,8 +187,11 @@ Filtros (`FilterSettings`, también editables por el Admin):
   o un `block_reason` del prompt → rechazo. Los reintentos de 408/429/5xx los hace el SDK.
 - **Sin fallbacks del servidor**: `enable_fallbacks` solo aplica a Claude.
 - **Proveedor de los experimentos: Gemini** (decidido por Daniel el 13-nov-2026: no hay key de Claude). Los
-  scripts de smoke usan `--provider gemini` por defecto. El default de la app (`LLMSettings`) sigue en Anthropic;
-  el Admin elige Gemini en la configuración. En el paper se reporta Gemini; la procedencia de cada MR guarda
+  scripts de smoke usan `--provider gemini` por defecto. El default genérico de `LLMSettings` sigue en Anthropic
+  para conservar los experimentos históricos, pero desde el 16-nov-2026 la plataforma inicializa Mongo con
+  Gemini (`default_platform_settings`). Para una base existente, el Admin lo elige en configuración o aplica
+  `python -m scripts.configure_gemini --apply`; no se reescriben ejecuciones anteriores. En el paper se reporta
+  Gemini; la procedencia de cada MR guarda
   proveedor y modelo. Revisar en los términos del nivel gratuito si Google usa los datos enviados (solo enviamos
   OpenAPI públicos y MRs, nunca respuestas de la SUT ni datos personales).
 

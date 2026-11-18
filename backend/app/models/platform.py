@@ -10,6 +10,7 @@ from pydantic import Field
 from pymongo import IndexModel
 
 from app.models.mr import MRCandidate, Provenance
+from app.pipeline.llm.config import LLMSettings
 from app.pipeline.orchestrator import PipelineSettings, RunReport
 
 
@@ -76,9 +77,14 @@ class PromptRecord(Record):
         name = "prompt_templates"
 
 
+def default_platform_settings() -> PipelineSettings:
+    """Platform default, independent of the pipeline's historical experiment defaults."""
+    return PipelineSettings(llm=LLMSettings(provider="gemini"))
+
+
 class SettingsRecord(Record):
     id: str = "pipeline"
-    pipeline: PipelineSettings = Field(default_factory=PipelineSettings)
+    pipeline: PipelineSettings = Field(default_factory=default_platform_settings)
 
     class Settings:
         name = "settings"
